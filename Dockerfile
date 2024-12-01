@@ -12,7 +12,7 @@ COPY ["DataLayer/DataLayer.csproj", "DataLayer/"]
 COPY ["Models/Models.csproj", "Models/"]
 COPY ["ServiceLayer/ServiceLayer.csproj", "ServiceLayer/"]
 RUN dotnet restore "Presentation/Presentation.csproj"
-COPY .. .
+COPY . .
 WORKDIR "/src/Presentation"
 RUN dotnet build "Presentation.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
