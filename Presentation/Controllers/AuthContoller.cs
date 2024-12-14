@@ -1,4 +1,5 @@
 ﻿using DataLayer.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Models.DTOs;
 using Models.Models;
@@ -19,25 +20,20 @@ namespace Presentation.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<User>> Register(RegisterDTO registerDto)
+        public async Task<ActionResult<User>> Register(RegisterProp registerProp)
         {
-            var user = await _authRepository.RegisterUserAsync(registerDto);
-            return Ok(user);
+            var user = await _authRepository.RegisterUserAsync(registerProp.Login, registerProp.Email, registerProp.Password);
+            return Ok();
         }
 
+        public record struct LoginResponse(JwtToken accessToken, JwtToken refreshToken);
         [HttpPost("login")]
-        public async Task<ActionResult<JwtToken>> Login(LoginProp prop)
+        public async Task<ActionResult<LoginResponse>> Login(LoginProp prop)
         {
             try
             {
-                var (accessJwtToken, refreshJwtToken) = await _authRepository.LoginAsync(prop);
-                var cookieOptions = new CookieOptions
-                {
-                    HttpOnly = true,
-                    Expires = refreshJwtToken.ExpiresAt
-                };
-                Response.Cookies.Append("refreshToken", refreshJwtToken.Token, cookieOptions);
-                return accessJwtToken;
+                var (accessJwtToken, refreshJwtToken) = await _authRepository.LoginAsync(prop.LoginOrEmail, prop.Password);
+                return Ok(new LoginResponse(accessJwtToken, refreshJwtToken));
             }
             catch (Exception ex)
             {
@@ -47,24 +43,20 @@ namespace Presentation.Controllers
 
         // POST api/<AuthContoller>
         [HttpPost("refreshToken")]
+        [Authorize]
         public async Task<ActionResult<JwtToken>> RefreshToken()
         {
-            var refreshToken = Request.Headers.AsEnumerable().Where(x => x.Key == "refreshToken").Select(x => x.Value)
-                .FirstOrDefault().FirstOrDefault();
+            var refreshToken = Request.Headers.Authorization.ToString().Substring("Bearer ".Length);
 
             try
             {
-                JwtToken accessJwtToken;
-                JwtToken newRefreshJwtToken;
-                (accessJwtToken, newRefreshJwtToken) = await _authRepository.RefreshToken(refreshToken);
-                var cookieOptions = new CookieOptions
+                if (refreshToken is null)
                 {
-                    HttpOnly = true,
-                    Expires = newRefreshJwtToken.ExpiresAt
-                };
-                Response.Cookies.Append("refreshToken", newRefreshJwtToken.Token, cookieOptions);
-                Response.Cookies.Append("accessToken", accessJwtToken.Token, cookieOptions);
-                return accessJwtToken;
+                    throw new Exception("No refresh token in headers");
+                }
+                    
+                var (_, newRefreshJwtToken) = await _authRepository.RefreshToken(refreshToken);
+                return Ok(newRefreshJwtToken);
             }
             catch (Exception ex)
             {

@@ -177,7 +177,7 @@ public class GroupRepository : IGroupRepository
         if (group.Users != null || group.Users.Count != 0)
             group.Users = group.Users.Select(user => _dataContext.Users.Find(user.UserId.Value)).ToList();
         group.GroupId = null;
-        group.CreationDate = DateTime.Now;
+        group.CreationDate = DateTime.UtcNow;
         _dataContext.Groups.Add(group);
         await _dataContext.SaveChangesAsync();
         return group;

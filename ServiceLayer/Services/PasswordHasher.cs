@@ -41,8 +41,8 @@ public class PasswordHasher
         var jwtToken = new JwtToken
         {
             Token = CreateToken(user, isRefreshToken),
-            ExpiresAt = DateTime.Now.AddDays(7),
-            IssuedAt = DateTime.Now
+            ExpiresAt = DateTime.UtcNow.AddDays(7),
+            IssuedAt = DateTime.UtcNow
         };
 
         return jwtToken;
@@ -64,34 +64,12 @@ public class PasswordHasher
 
         var token = new JwtSecurityToken(
             claims: claims,
-            expires: isRefreshToken ? DateTime.Now.AddDays(30) : DateTime.Now.AddDays(1),
+            expires: isRefreshToken ? DateTime.UtcNow.AddDays(30) : DateTime.UtcNow.AddDays(1),
             signingCredentials: credentials);
 
         var jwtToken = new JwtSecurityTokenHandler().WriteToken(token);
 
         return jwtToken;
-    }
-    public string CreateToken(User user)
-    {
-        List<Claim> claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.Name, user.Login),
-            new Claim(ClaimTypes.Role, "User")
-        };
-
-        var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(
-            _configuration.GetSection("JWT:Token").Value));
-
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
-
-        var token = new JwtSecurityToken(
-            claims: claims,
-            expires: DateTime.Now.AddDays(1),
-            signingCredentials: creds);
-
-        var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-
-        return jwt;
     }
 
     public async Task<(string, string)> CreatePasswordHashAsync(string password)
