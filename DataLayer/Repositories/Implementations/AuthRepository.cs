@@ -12,6 +12,7 @@ public class AuthRepository : IAuthRepository
 {
     private readonly PasswordHasher _passwordHasher;
     private readonly IUserRepository _userRepository;
+    private readonly IGroupRepository _groupRepository;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly DataContext _dataContext;
     private readonly DataGenerator _dataGenerator;
@@ -19,6 +20,7 @@ public class AuthRepository : IAuthRepository
 
     public AuthRepository(
         IUserRepository userRepository,
+        IGroupRepository groupRepository,
         PasswordHasher passwordHasher,
         DataContext dataContext,
         IRefreshTokenRepository refreshTokenRepository,
@@ -26,6 +28,7 @@ public class AuthRepository : IAuthRepository
         UserService userService)
     {
         _userRepository = userRepository;
+        _groupRepository = groupRepository;
         _passwordHasher = passwordHasher;
         _dataContext = dataContext;
         _refreshTokenRepository = refreshTokenRepository;
@@ -46,6 +49,13 @@ public class AuthRepository : IAuthRepository
         };
 
         await _userRepository.AddUserAsync(user);
+        Group userGroup = new()
+        {
+            IsUserGroup = true,
+            CreationDate = DateTime.UtcNow,
+            Title = user.Login
+        };
+        await _groupRepository.AddGroupAsync(userGroup);
         return user;
     }
 
@@ -54,7 +64,7 @@ public class AuthRepository : IAuthRepository
         var userForLogin = await _userRepository.GetUserByCredentials(loginOrEmail);
         if (userForLogin is null)
             throw new AuthException(AuthErrorType.BadCredentials);
-
+            
         var isPasswordRight = await _passwordHasher.VerifyPasswordHashAsync(password, userForLogin.PasswordHash, userForLogin.PasswordSalt);
         if (!isPasswordRight)
             throw new AuthException(AuthErrorType.BadCredentials);
