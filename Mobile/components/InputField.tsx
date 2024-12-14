@@ -46,7 +46,7 @@ const InputField = ({
             className={`flex flex-row justify-start items-center relative bg-neutral-100 rounded-full border border-neutral-100 focus:border-primary-500  ${containerStyle}`}
           >
             {Icon && (
-              <View className="w-6 h-6 ml-4">
+              <View className="w-4 h-4 ml-4">
                 <Icon />
               </View>
             )}

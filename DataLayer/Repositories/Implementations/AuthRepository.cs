@@ -36,8 +36,14 @@ public class AuthRepository : IAuthRepository
         _userService = userService;
     }
 
-    public async Task<User> RegisterUserAsync(string login, string email, string password)
+    public async Task RegisterUserAsync(string login, string email, string password)
     {
+        if (await _userRepository.IsLoginTakenAsync(login))
+            throw new AuthException(AuthErrorType.LoginTaken);
+
+        if (await _userRepository.IsEmailUsedAsync(email))
+            throw new AuthException(AuthErrorType.EmailIsUsed);
+        
         var (hash, salt) = await _passwordHasher.CreatePasswordHashAsync(password);
         User user = new()
         {
@@ -56,7 +62,6 @@ public class AuthRepository : IAuthRepository
             Title = user.Login
         };
         await _groupRepository.AddGroupAsync(userGroup);
-        return user;
     }
 
     public async Task<(JwtToken, JwtToken)> LoginAsync(string loginOrEmail, string password)
@@ -64,8 +69,10 @@ public class AuthRepository : IAuthRepository
         var userForLogin = await _userRepository.GetUserByCredentials(loginOrEmail);
         if (userForLogin is null)
             throw new AuthException(AuthErrorType.BadCredentials);
-            
-        var isPasswordRight = await _passwordHasher.VerifyPasswordHashAsync(password, userForLogin.PasswordHash, userForLogin.PasswordSalt);
+
+        var isPasswordRight =
+            await _passwordHasher.VerifyPasswordHashAsync(password, userForLogin.PasswordHash,
+                userForLogin.PasswordSalt);
         if (!isPasswordRight)
             throw new AuthException(AuthErrorType.BadCredentials);
 
@@ -91,10 +98,12 @@ public class AuthRepository : IAuthRepository
         {
             throw new AuthException(AuthErrorType.UserNotFound);
         }
+
         if (userFromJwt.RefreshToken?.Token != refreshToken)
         {
             throw new AuthException(AuthErrorType.InvalidToken);
         }
+
         if (userFromJwt.RefreshToken.Expires < DateTime.UtcNow)
         {
             throw new AuthException(AuthErrorType.TokenExpired);
@@ -111,18 +120,5 @@ public class AuthRepository : IAuthRepository
 
         generatedRefreshToken.User.RefreshToken = null;
         return (accessJwtToken, generatedRefreshJwtToken);
-    }
-
-    public async Task<IEnumerable<User>> AddMockUsersAsync(int numOfUsers = 10)
-    {
-        var addedUsers = new List<User>();
-        for (int i = 0; i < numOfUsers; i++)
-        {
-            var createdUser = _dataGenerator.GeneratePerson();
-            createdUser = await RegisterUserAsync(createdUser.Login, createdUser.Email, createdUser.PasswordHash);
-            addedUsers.Add(createdUser);
-        }
-
-        return addedUsers;
     }
 }

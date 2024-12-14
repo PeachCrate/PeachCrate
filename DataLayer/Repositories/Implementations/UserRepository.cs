@@ -144,4 +144,9 @@ public class UserRepository : IUserRepository
     {
         return await _dataContext.Users.AnyAsync(u => u.Login == login);
     }
+    
+    public async Task<bool> IsEmailUsedAsync(string email)
+    {
+        return await _dataContext.Users.AnyAsync(u => u.Email == email);
+    }
 }

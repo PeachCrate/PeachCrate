@@ -1,10 +1,8 @@
 ﻿using DataLayer.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Models.DTOs;
 using Models.Models;
 using Models.Props;
-using ServiceLayer.Services;
 
 namespace Presentation.Controllers
 {
@@ -19,21 +17,29 @@ namespace Presentation.Controllers
             _authRepository = authRepository;
         }
 
+        private record struct RegisterResponse(string Message);
         [HttpPost("register")]
-        public async Task<ActionResult<User>> Register(RegisterProp registerProp)
+        public async Task<ActionResult<string>> Register(RegisterProp registerProp)
         {
-            var user = await _authRepository.RegisterUserAsync(registerProp.Login, registerProp.Email, registerProp.Password);
-            return Ok();
+            try
+            {
+                await _authRepository.RegisterUserAsync(registerProp.Login, registerProp.Email, registerProp.Password);
+                return Ok(new RegisterResponse("Registered."));
+            }
+            catch (AuthException exception)
+            {
+                return BadRequest(exception.Message);
+            }
         }
 
-        public record struct LoginResponse(JwtToken accessToken, JwtToken refreshToken);
+        public record struct JwtTokensResponse(JwtToken AccessToken, JwtToken RefreshToken);
         [HttpPost("login")]
-        public async Task<ActionResult<LoginResponse>> Login(LoginProp prop)
+        public async Task<ActionResult<JwtTokensResponse>> Login(LoginProp prop)
         {
             try
             {
                 var (accessJwtToken, refreshJwtToken) = await _authRepository.LoginAsync(prop.LoginOrEmail, prop.Password);
-                return Ok(new LoginResponse(accessJwtToken, refreshJwtToken));
+                return Ok(new JwtTokensResponse(accessJwtToken, refreshJwtToken));
             }
             catch (Exception ex)
             {
@@ -44,19 +50,12 @@ namespace Presentation.Controllers
         // POST api/<AuthContoller>
         [HttpPost("refreshToken")]
         [Authorize]
-        public async Task<ActionResult<JwtToken>> RefreshToken()
+        public async Task<ActionResult<JwtTokensResponse>> RefreshToken(string refreshToken)
         {
-            var refreshToken = Request.Headers.Authorization.ToString().Substring("Bearer ".Length);
-
             try
             {
-                if (refreshToken is null)
-                {
-                    throw new Exception("No refresh token in headers");
-                }
-                    
-                var (_, newRefreshJwtToken) = await _authRepository.RefreshToken(refreshToken);
-                return Ok(newRefreshJwtToken);
+                var (accessToken, newRefreshJwtToken) = await _authRepository.RefreshToken(refreshToken);
+                return Ok(new JwtTokensResponse(accessToken, newRefreshJwtToken));
             }
             catch (Exception ex)
             {
@@ -72,13 +71,6 @@ namespace Presentation.Controllers
                         return BadRequest(ex.Message);
                 }
             }
-        }
-
-        [HttpPost("addMockUsers")]
-        public async Task<IActionResult> PostMockUsers([FromQuery] int numOfUsers = 10)
-        {
-            var users = await _authRepository.AddMockUsersAsync(numOfUsers);
-            return Ok(users);
         }
     }
 }

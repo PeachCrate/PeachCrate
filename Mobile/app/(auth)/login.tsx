@@ -1,20 +1,44 @@
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ScrollView, Text, View } from "react-native";
-import React, { useState } from "react";
+import { Alert, ScrollView, Text, View } from "react-native";
+import React, { useCallback, useState } from "react";
 import InputField from "@/components/InputField";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { faAt, faLock, faPerson } from "@fortawesome/free-solid-svg-icons";
 import CustomButton from "@/components/CustomButton";
 import OAuth from "@/components/OAuth";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
+import { useSignIn } from "@clerk/clerk-expo";
 
 const Login = () => {
+  const { signIn, setActive, isLoaded } = useSignIn();
+
   const [form, setForm] = useState({
     email: "",
     password: "",
   });
 
-  function onSignInPress() {}
+  const onSignInPress = useCallback(async () => {
+    if (!isLoaded) return;
+
+    try {
+      const signInAttempt = await signIn.create({
+        identifier: form.email,
+        password: form.password,
+      });
+
+      if (signInAttempt.status === "complete") {
+        await setActive({ session: signInAttempt.createdSessionId });
+        router.replace("/(root)/(tabs)/home");
+      } else {
+        // See https://clerk.com/docs/custom-flows/error-handling for more info on error handling
+        console.log(JSON.stringify(signInAttempt, null, 2));
+        Alert.alert("Error", "Log in failed. Please try again.");
+      }
+    } catch (err: any) {
+      console.log(JSON.stringify(err, null, 2));
+      Alert.alert("Error", err.errors[0].longMessage);
+    }
+  }, [isLoaded, form]);
 
   return (
     <ScrollView className="flex-1 bg-white">
