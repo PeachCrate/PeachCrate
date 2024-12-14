@@ -16,6 +16,7 @@ public class AuthRepository : IAuthRepository
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly DataContext _dataContext;
     private readonly DataGenerator _dataGenerator;
+    private readonly UserService _userService;
 
     public AuthRepository(
         IUserRepository userRepository,
@@ -23,7 +24,8 @@ public class AuthRepository : IAuthRepository
         PasswordHasher passwordHasher,
         DataContext dataContext,
         IRefreshTokenRepository refreshTokenRepository,
-        DataGenerator dataGenerator)
+        DataGenerator dataGenerator,
+        UserService userService)
     {
         _userRepository = userRepository;
         _groupRepository = groupRepository;
@@ -31,18 +33,18 @@ public class AuthRepository : IAuthRepository
         _dataContext = dataContext;
         _refreshTokenRepository = refreshTokenRepository;
         _dataGenerator = dataGenerator;
+        _userService = userService;
     }
 
-    public async Task<User> RegisterUserAsync(RegisterDTO registerDto)
+    public async Task<User> RegisterUserAsync(string login, string email, string password)
     {
-        string hash, salt;
-        (hash, salt) = await _passwordHasher.CreatePasswordHashAsync(registerDto.Password);
+        var (hash, salt) = await _passwordHasher.CreatePasswordHashAsync(password);
         User user = new()
         {
-            Login = registerDto.Login!,
-            Email = registerDto.Email, 
-            PasswordHash = hash, 
-            PasswordSalt = salt, 
+            Login = login,
+            Email = email,
+            PasswordHash = hash,
+            PasswordSalt = salt,
             RegistrationDate = DateTime.UtcNow
         };
 
@@ -57,27 +59,22 @@ public class AuthRepository : IAuthRepository
         return user;
     }
 
-    public async Task<(JwtToken, JwtToken)> LoginAsync(LoginProp prop)
+    public async Task<(JwtToken, JwtToken)> LoginAsync(string loginOrEmail, string password)
     {
-        var userForLogin = await _userRepository.GetUserByCredentials(prop.LoginOrEmail);
-        if (userForLogin == null)
-        {
-            throw new Exception("Bad credentials");
-        }
-
-        bool isPasswordRight =
-            await _passwordHasher.VerifyPasswordHashAsync(prop.Password, userForLogin.PasswordHash,
-                userForLogin.PasswordSalt);
+        var userForLogin = await _userRepository.GetUserByCredentials(loginOrEmail);
+        if (userForLogin is null)
+            throw new AuthException(AuthErrorType.BadCredentials);
+            
+        var isPasswordRight = await _passwordHasher.VerifyPasswordHashAsync(password, userForLogin.PasswordHash, userForLogin.PasswordSalt);
         if (!isPasswordRight)
-            throw new Exception("Bad credentials");
+            throw new AuthException(AuthErrorType.BadCredentials);
 
         var accessJwtToken = _passwordHasher.GenerateToken(userForLogin);
         var refreshJwtToken = _passwordHasher.GenerateToken(userForLogin, true);
 
         // save refresh token for user
         var refreshToken = refreshJwtToken.JwtToRefreshToken();
-
-        refreshToken.UserId = userForLogin.UserId.Value;
+        refreshToken.UserId = userForLogin.UserId!.Value;
         await _refreshTokenRepository.AddRefreshTokenAsync(refreshToken);
 
         return (accessJwtToken, refreshJwtToken);
@@ -86,25 +83,21 @@ public class AuthRepository : IAuthRepository
     public async Task<(JwtToken, JwtToken)> RefreshToken(string refreshToken)
     {
         var jwt = new JwtSecurityTokenHandler().ReadJwtToken(refreshToken);
-
         var claims = jwt.Claims.ToList();
+        var userId = _userService.GetUserIdFromClaims(claims);
 
-        var userIdClaim = claims.Where(claim => claim.Type == "UserId").SingleOrDefault();
-
-        var userIdStr = userIdClaim != null ? userIdClaim.Value : null;
-        if (!int.TryParse(userIdStr, out var userIdFromJwt))
+        var userFromJwt = await _userRepository.GetUserAsync(userId);
+        if (userFromJwt is null)
         {
-            throw new Exception("User id in jwt is invalid");
+            throw new AuthException(AuthErrorType.UserNotFound);
         }
-
-        var userFromJwt = await _userRepository.GetUserAsync(userIdFromJwt);
-        if (userFromJwt.RefreshToken.Token != refreshToken)
+        if (userFromJwt.RefreshToken?.Token != refreshToken)
         {
-            throw new Exception("Invalid refresh token.");
+            throw new AuthException(AuthErrorType.InvalidToken);
         }
-        else if (userFromJwt.RefreshToken.Expires < DateTime.Now)
+        if (userFromJwt.RefreshToken.Expires < DateTime.UtcNow)
         {
-            throw new Exception("Token expired.");
+            throw new AuthException(AuthErrorType.TokenExpired);
         }
 
         JwtToken accessJwtToken = _passwordHasher.GenerateToken(userFromJwt);
@@ -126,8 +119,7 @@ public class AuthRepository : IAuthRepository
         for (int i = 0; i < numOfUsers; i++)
         {
             var createdUser = _dataGenerator.GeneratePerson();
-            RegisterDTO registerDto = new(createdUser.Login, createdUser.Email, createdUser.PasswordHash);
-            createdUser = await RegisterUserAsync(registerDto);
+            createdUser = await RegisterUserAsync(createdUser.Login, createdUser.Email, createdUser.PasswordHash);
             addedUsers.Add(createdUser);
         }
 
