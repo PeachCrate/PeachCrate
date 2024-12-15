@@ -10,6 +10,7 @@ import React from "react";
 const Welcome = () => {
   return (
     <SafeAreaView className="flex h-full items-center justify-end bg-white">
+      /// TODO: add modal for choosing existing account
       <View className="flex pb-96">
         <Text>Our beautiful welcome page</Text>
       </View>

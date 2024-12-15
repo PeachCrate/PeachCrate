@@ -1,5 +1,5 @@
-import { Tabs } from "expo-router";
-import React from "react";
+import { router, Tabs } from "expo-router";
+import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import {
   faBasketball,
@@ -26,7 +26,7 @@ const TabIcon = ({
 export default function TabsLayout() {
   return (
     <Tabs
-      //initialRouteName="index"
+      initialRouteName="home"
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
