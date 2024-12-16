@@ -3,7 +3,7 @@ import { useAuth, useClerk } from "@clerk/clerk-expo";
 import React from "react";
 
 const Home = () => {
-  const { user, session } = useClerk();
+  const { session } = useClerk();
   //console.log("user", user);
   console.log();
   //console.log("session", session);

@@ -60,8 +60,7 @@ const CustomButton = ({
   return (
     <TouchableOpacity
       onPress={onPress}
-      style={showShadow ? shadowStyle : null}
-      className={`w-full rounded-full p-3 flex flex-row justify-center items-center shadow-lg ${getBgVariantStyle(bgVariant)} ${className}`}
+      className={`w-full rounded-full p-3 flex flex-row justify-center items-center ${showShadow ? "shadow-2xl shadow-neutral-400/70" : ""} ${getBgVariantStyle(bgVariant)} ${className}`}
       {...props}
     >
       {IconLeft && <IconLeft />}
@@ -71,14 +70,6 @@ const CustomButton = ({
       {IconRight && <IconRight />}
     </TouchableOpacity>
   );
-};
-
-const shadowStyle = {
-  shadowColor: "#000", // Shadow color
-  shadowOffset: { width: 0, height: 4 }, // Position of shadow
-  shadowOpacity: 0.3, // Opacity of shadow
-  shadowRadius: 3.84, // Blur radius
-  elevation: 5, // Android shadow
 };
 
 export default CustomButton;
