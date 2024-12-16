@@ -1,11 +1,25 @@
-import { View, Text } from "react-native";
+import { View, Text, Alert } from "react-native";
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { faGoogle } from "@fortawesome/free-brands-svg-icons";
 import CustomButton from "@/components/CustomButton";
+import { router } from "expo-router";
+import { useOAuth } from "@clerk/clerk-expo";
+import { googleOAuth } from "@/lib/auth";
 
 const OAuth = () => {
-  function handleGoogleSignIn() {}
+  const { startOAuthFlow } = useOAuth({ strategy: "oauth_google" });
+
+  const handleGoogleSignIn = async () => {
+    const result = await googleOAuth(startOAuthFlow);
+
+    if (result.code === "session_exists") {
+      Alert.alert("Success", "Session exists. Redirecting to home screen.");
+      router.replace("/(root)/(tabs)/home");
+    }
+
+    Alert.alert(result.success ? "Success" : "Error", result.message);
+  };
 
   return (
     <View>
