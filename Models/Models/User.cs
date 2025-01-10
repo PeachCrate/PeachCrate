@@ -5,6 +5,7 @@ namespace Models.Models;
 public class User
 {
     public int? UserId { get; set; }
+    public string? ClerkId { get; set; }
     [MaxLength(20)]
     [MinLength(5)]
     public string Login { get; set; }

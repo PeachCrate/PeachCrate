@@ -20,6 +20,7 @@ interface InputFieldProps extends TextInputProps {
   inputStyle?: string;
   iconStyle?: string;
   className?: string;
+  error: string | undefined;
 }
 
 const InputField = ({
@@ -31,6 +32,7 @@ const InputField = ({
   inputStyle,
   iconStyle,
   className,
+  error,
   ...props
 }: InputFieldProps) => {
   return (
@@ -56,6 +58,9 @@ const InputField = ({
               {...props}
             />
           </View>
+          {error && (
+            <Text className={"text-red-500 text-sm mt-1"}>{error}</Text>
+          )}
         </View>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>

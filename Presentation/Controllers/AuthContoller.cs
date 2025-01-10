@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Models.Models;
 using Models.Props;
+using NuGet.Protocol;
 
 namespace Presentation.Controllers
 {
@@ -17,14 +18,20 @@ namespace Presentation.Controllers
             _authRepository = authRepository;
         }
 
-        private record struct RegisterResponse(string Message);
+        record Resp(string message);
+        [HttpGet("hello")]
+        public IActionResult Hello()
+        {
+            var message = "hello world!!!";
+            return Ok(new Resp(message));
+        }
         [HttpPost("register")]
-        public async Task<ActionResult<string>> Register(RegisterProp registerProp)
+        public async Task<ActionResult<JwtTokensResponse>> Register(RegisterProp registerProp)
         {
             try
             {
-                await _authRepository.RegisterUserAsync(registerProp.Login, registerProp.Email, registerProp.Password);
-                return Ok(new RegisterResponse("Registered."));
+                var tokens = await _authRepository.RegisterUserAsync(registerProp.Login, registerProp.Email, registerProp.Password, registerProp.ClerkId);
+                return Ok(tokens);
             }
             catch (AuthException exception)
             {
@@ -41,9 +48,9 @@ namespace Presentation.Controllers
                 var (accessJwtToken, refreshJwtToken) = await _authRepository.LoginAsync(prop.LoginOrEmail, prop.Password);
                 return Ok(new JwtTokensResponse(accessJwtToken, refreshJwtToken));
             }
-            catch (Exception ex)
+            catch (AuthException exception)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(exception.Message);
             }
         }
 
@@ -57,19 +64,26 @@ namespace Presentation.Controllers
                 var (accessToken, newRefreshJwtToken) = await _authRepository.RefreshToken(refreshToken);
                 return Ok(new JwtTokensResponse(accessToken, newRefreshJwtToken));
             }
-            catch (Exception ex)
+            catch (AuthException exception)
             {
-                switch (ex.Message)
-                {
-                    case "User id in jwt is invalid":
-                        return BadRequest("User id in jwt is invalid");
-                    case "Invalid refresh token.":
-                        return Unauthorized("Invalid refresh token.");
-                    case "Token expired.":
-                        return Unauthorized("Token expired.");
-                    default:
-                        return BadRequest(ex.Message);
-                }
+                return BadRequest(exception.Message);
+            }
+        }
+
+        public record IsTakenResponse(bool isCredentialTaken);
+        [HttpPost("IsCredentialTaken")]
+        public async Task<ActionResult<IsTakenResponse>> IsTaken([FromQuery] string? login, [FromQuery] string? email)
+        {
+            if (string.IsNullOrEmpty(login) || string.IsNullOrEmpty(email))
+                return Ok(new IsTakenResponse(false));
+            try
+            {
+                var isTaken = await _authRepository.IsCredentialTaken(login, email);
+                return Ok(new IsTakenResponse(isTaken));
+            }
+            catch (AuthException exception)
+            {
+                return BadRequest(exception.Message);
             }
         }
     }

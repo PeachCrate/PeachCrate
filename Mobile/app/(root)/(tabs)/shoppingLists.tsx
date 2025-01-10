@@ -1,5 +1,4 @@
-import {View} from "react-native";
-import {Text} from 'react-native-magnus'
+import { Text, View } from "react-native";
 import React from "react";
 
 const ShoppingLists = () => {
@@ -7,7 +6,7 @@ const ShoppingLists = () => {
     <View>
       <Text>ShoppingLists</Text>
     </View>
-  )
-}
+  );
+};
 
 export default ShoppingLists;

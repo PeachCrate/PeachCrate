@@ -5,6 +5,7 @@ using Models.Models;
 using Models.Props;
 using ServiceLayer.Services;
 using System.IdentityModel.Tokens.Jwt;
+using Models.Responses;
 
 namespace DataLayer.Repositories.Implementations;
 
@@ -36,7 +37,7 @@ public class AuthRepository : IAuthRepository
         _userService = userService;
     }
 
-    public async Task RegisterUserAsync(string login, string email, string password)
+    public async Task<JwtTokensResponse> RegisterUserAsync(string login, string email, string password, string? clerkId)
     {
         if (await _userRepository.IsLoginTakenAsync(login))
             throw new AuthException(AuthErrorType.LoginTaken);
@@ -51,7 +52,8 @@ public class AuthRepository : IAuthRepository
             Email = email,
             PasswordHash = hash,
             PasswordSalt = salt,
-            RegistrationDate = DateTime.UtcNow
+            RegistrationDate = DateTime.UtcNow,
+            ClerkId = clerkId,
         };
 
         await _userRepository.AddUserAsync(user);
@@ -59,12 +61,14 @@ public class AuthRepository : IAuthRepository
         {
             IsUserGroup = true,
             CreationDate = DateTime.UtcNow,
-            Title = user.Login
+            Title = user.Login,
+            Users = [user]
         };
         await _groupRepository.AddGroupAsync(userGroup);
+        return await GenerateTokens(user);
     }
 
-    public async Task<(JwtToken, JwtToken)> LoginAsync(string loginOrEmail, string password)
+    public async Task<JwtTokensResponse> LoginAsync(string loginOrEmail, string password)
     {
         var userForLogin = await _userRepository.GetUserByCredentials(loginOrEmail);
         if (userForLogin is null)
@@ -76,6 +80,11 @@ public class AuthRepository : IAuthRepository
         if (!isPasswordRight)
             throw new AuthException(AuthErrorType.BadCredentials);
 
+        return await GenerateTokens(userForLogin);
+    }
+
+    private async Task<JwtTokensResponse> GenerateTokens(User userForLogin)
+    {
         var accessJwtToken = _passwordHasher.GenerateToken(userForLogin);
         var refreshJwtToken = _passwordHasher.GenerateToken(userForLogin, true);
 
@@ -83,11 +92,10 @@ public class AuthRepository : IAuthRepository
         var refreshToken = refreshJwtToken.JwtToRefreshToken();
         refreshToken.UserId = userForLogin.UserId!.Value;
         await _refreshTokenRepository.AddRefreshTokenAsync(refreshToken);
-
-        return (accessJwtToken, refreshJwtToken);
+        return new JwtTokensResponse(accessJwtToken, refreshJwtToken);
     }
 
-    public async Task<(JwtToken, JwtToken)> RefreshToken(string refreshToken)
+    public async Task<JwtTokensResponse> RefreshToken(string refreshToken)
     {
         var jwt = new JwtSecurityTokenHandler().ReadJwtToken(refreshToken);
         var claims = jwt.Claims.ToList();
@@ -119,6 +127,17 @@ public class AuthRepository : IAuthRepository
         await _refreshTokenRepository.AddRefreshTokenAsync(generatedRefreshToken);
 
         generatedRefreshToken.User.RefreshToken = null;
-        return (accessJwtToken, generatedRefreshJwtToken);
+        return new JwtTokensResponse(accessJwtToken, generatedRefreshJwtToken);
+    }
+
+    public async Task<bool> IsCredentialTaken(string login, string email)
+    {
+        if (await _userRepository.IsLoginTakenAsync(login))
+            throw new AuthException(AuthErrorType.LoginTaken);
+
+        if (await _userRepository.IsEmailUsedAsync(email))
+            throw new AuthException(AuthErrorType.EmailIsUsed);
+
+        return true;
     }
 }

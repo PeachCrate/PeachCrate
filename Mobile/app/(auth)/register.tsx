@@ -1,4 +1,11 @@
-import { Alert, ScrollView, Text, View } from "react-native";
+import {
+  Alert,
+  Button,
+  GestureResponderEvent,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import InputField from "@/components/InputField";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import {
@@ -9,17 +16,33 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import CustomButton from "@/components/CustomButton";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import OAuth from "@/components/OAuth";
 import { Link, router } from "expo-router";
 import { ReactNativeModal } from "react-native-modal";
-import { useSignUp } from "@clerk/clerk-expo";
+import { useClerk, useSignUp } from "@clerk/clerk-expo";
+import {
+  authApi,
+  useIsCredentialTakenQuery,
+  useRegisterMutation,
+} from "@/behavior/auth/authApi";
+import { RegisterRequest } from "@/behavior/auth/types";
+import { useAppDispatch } from "@/behavior/hooks";
+import { setAccessToken } from "@/behavior/auth/authSlice";
+import { Form, Formik, useFormik } from "formik";
+import {
+  initialRegisterForm,
+  RegisterForm,
+  registerFormSchema,
+} from "@/app/(auth)/register.types";
 
 const Register = () => {
+  const { session } = useClerk();
   const { isLoaded, signUp, setActive } = useSignUp();
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const dispatch = useAppDispatch();
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<RegisterForm>({
     name: "",
     email: "",
     password: "",
@@ -31,15 +54,32 @@ const Register = () => {
     code: "",
   });
 
+  const [register, { isLoading }] = useRegisterMutation();
+  // const {
+  //   data: isTaken,
+  //   isLoading: isLoadingCredentials,
+  //   isError: isErrorCredentials,
+  //   error: errorCredentials,
+  // } = useIsCredentialTakenQuery({ login: form.name, email: form.email });
+
+  // useEffect(() => {
+  //   if (isErrorCredentials) Alert.alert(errorCredentials.data);
+  // }, [isErrorCredentials]);
+
+  useEffect(() => {
+    const t = dispatch(authApi.endpoints.hello.initiate(null));
+    console.log("t", t.data);
+  }, []);
+
   // Handle submission of sign-up form
-  const onSignUpPress = async () => {
+  const onSignUpPress = async (values: RegisterForm) => {
     if (!isLoaded) return;
 
     // Start sign-up process using email and password provided
     try {
       await signUp.create({
-        emailAddress: form.email,
-        password: form.password,
+        emailAddress: values.email,
+        password: values.password,
       });
 
       // Send user an email with verification code
@@ -59,7 +99,6 @@ const Register = () => {
   // Handle submission of verification form
   const onVerifyPress = async () => {
     if (!isLoaded) return;
-
     try {
       // Use the code the user provided to attempt verification
       const signUpAttempt = await signUp.attemptEmailAddressVerification({
@@ -71,6 +110,15 @@ const Register = () => {
       if (signUpAttempt.status === "complete") {
         /// TODO: create user in db
         await setActive({ session: signUpAttempt.createdSessionId });
+        const request: RegisterRequest = {
+          login: form.name,
+          email: form.email,
+          password: form.password,
+          clerkId: session!.user.id!,
+        };
+        const resp = await register(request).unwrap();
+        dispatch(setAccessToken(resp.accessToken.token));
+        dispatch(setAccessToken(resp.refreshToken.token));
         setVerification({ ...verification, state: "success" });
         //router.replace("/");
       } else {
@@ -105,35 +153,48 @@ const Register = () => {
         </View>
       </View>
       <View className="p-5">
-        <InputField
-          label="Name"
-          placeholder="Enter name"
-          Icon={() => <FontAwesomeIcon icon={faPerson} />}
-          value={form.name}
-          onChangeText={(value) => setForm({ ...form, name: value })}
-        />
-        <InputField
-          label="Email"
-          placeholder="Enter email"
-          Icon={() => <FontAwesomeIcon icon={faAt} />}
-          textContentType="emailAddress"
-          value={form.email}
-          onChangeText={(value) => setForm({ ...form, email: value })}
-        />
-        <InputField
-          label="Password"
-          placeholder="Enter password"
-          Icon={() => <FontAwesomeIcon icon={faLock} />}
-          secureTextEntry={true}
-          textContentType="password"
-          value={form.password}
-          onChangeText={(value) => setForm({ ...form, password: value })}
-        />
-        <CustomButton
-          title="Sign Up"
-          onPress={onSignUpPress}
-          className="mt-6"
-        />
+        <Formik initialValues={initialRegisterForm} onSubmit={onSignUpPress}>
+          {({ handleChange, handleBlur, handleSubmit, values, errors }) => (
+            <View>
+              <InputField
+                label="Name"
+                placeholder="Enter name"
+                Icon={() => <FontAwesomeIcon icon={faPerson} />}
+                value={values.name}
+                onChangeText={handleChange("name")}
+                onBlur={handleBlur}
+                error={errors.name}
+              />
+              <InputField
+                label="Email"
+                placeholder="Enter email"
+                Icon={() => <FontAwesomeIcon icon={faAt} />}
+                textContentType="emailAddress"
+                value={values.email}
+                onChangeText={handleChange("email")}
+                onBlur={handleBlur}
+                error={errors.email}
+              />
+              <InputField
+                label="Password"
+                placeholder="Enter password"
+                Icon={() => <FontAwesomeIcon icon={faLock} />}
+                secureTextEntry={true}
+                textContentType="password"
+                value={values.password}
+                onChangeText={handleChange("password")}
+                onBlur={handleBlur}
+                error={errors.password}
+              />
+              <CustomButton
+                title="Sign Up"
+                onPress={() => handleSubmit()}
+                className="mt-6"
+              />
+            </View>
+          )}
+        </Formik>
+
         <OAuth />
         <Link
           href="/login"
@@ -166,6 +227,7 @@ const Register = () => {
               onChangeText={(code) =>
                 setVerification({ ...verification, code })
               }
+              error={""}
             />
             {verification.error && (
               <Text className="text-red-500 text-sm mt-1"></Text>

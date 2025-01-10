@@ -1,12 +1,18 @@
 import { Redirect } from "expo-router";
 import { useAuth, useClerk } from "@clerk/clerk-expo";
-import React from "react";
+import React, { useEffect } from "react";
+import { useAppDispatch } from "@/behavior/hooks";
+import { setClientId } from "@/behavior/auth/authSlice";
 
 const Home = () => {
+  const dispatch = useAppDispatch();
   const { session } = useClerk();
-  //console.log("user", user);
-  console.log();
-  //console.log("session", session);
+
+  useEffect(() => {
+    if (!session) return;
+    dispatch(setClientId(session.user.id!));
+  }, [session?.user.id]);
+
   if (session?.status) {
     return <Redirect href={"/(root)/(tabs)/home"} />;
   }

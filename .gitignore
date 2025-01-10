@@ -395,3 +395,5 @@ bin
 .cxx
 debug
 .expo
+
+*android*

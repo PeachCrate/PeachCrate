@@ -1,5 +1,5 @@
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Text, TouchableOpacity, View } from "react-native";
+import { TouchableOpacity, View } from "react-native";
 import { router } from "expo-router";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { faSpider } from "@fortawesome/free-solid-svg-icons/faSpider";
@@ -8,6 +8,7 @@ import CustomButton from "@/components/CustomButton";
 import React, { useMemo, useState } from "react";
 import { useClerk } from "@clerk/clerk-expo";
 import PickUserModal from "@/components/PickUserModal";
+import { Button, Text } from "react-native-paper";
 
 const Welcome = () => {
   const { client } = useClerk();
@@ -31,25 +32,32 @@ const Welcome = () => {
         </TouchableOpacity>
       )}
       <View className="flex pb-96">
-        <Text>Our beautiful welcome page</Text>
+        <Text variant="bodyLarge">Our beautiful welcome page</Text>
+        <Button mode="contained" icon={"coffee"}>
+          Test
+        </Button>
       </View>
-      <View className="flex flex-row flex-wrap m-3 p-2">
-        <CustomButton
-          title="Register"
-          className="w-1/2"
+      <View className="flex flex-row p-5 w-full">
+        <Button
+          mode="contained"
+          icon="spider"
+          className="flex flex-col flex-1"
           onPress={() => {
             router.replace("/(auth)/register");
           }}
-          IconRight={() => <FontAwesomeIcon icon={faSpider} />}
-        />
-        <CustomButton
-          title="Login"
-          className="w-1/2"
+        >
+          Register
+        </Button>
+        <Button
+          mode="contained"
+          icon="coffee"
+          className="flex flex-col flex-1"
           onPress={() => {
             router.replace("/(auth)/login");
           }}
-          IconRight={() => <FontAwesomeIcon icon={faMugSaucer} />}
-        />
+        >
+          Login
+        </Button>
       </View>
       <PickUserModal
         showModal={showProfilesModal}

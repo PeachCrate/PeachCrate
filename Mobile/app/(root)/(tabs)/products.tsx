@@ -1,12 +1,12 @@
-import {View} from "react-native";
-import {Text} from 'react-native-magnus'
+import { Text, View } from "react-native";
+import React from "react";
 
 const Products = () => {
   return (
     <View>
       <Text>Products</Text>
     </View>
-  )
-}
+  );
+};
 
 export default Products;
