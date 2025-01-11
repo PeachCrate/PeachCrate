@@ -1,5 +1,5 @@
 import * as Yup from "yup";
-import { createYupSchema } from "@/behavior/types";
+import {createYupSchema} from "@/behavior/types";
 
 export interface RegisterForm {
   name: string;
@@ -15,10 +15,17 @@ export const initialRegisterForm: RegisterForm = {
 
 export const registerFormSchema = createYupSchema<RegisterForm>(
   Yup.object().shape({
-    name: Yup.string().required("Name is required"),
-    email: Yup.string()
-      .email("Invalid email format")
-      .required("Email is required"),
-    password: Yup.string().required("Password is required"),
+    name: Yup
+      .string()
+      .max(20, "Maximum length is 20 characters.")
+      .min(5, "Minimum length is 5 characters.")
+      .required("Name is required"),
+    email: Yup
+      .string()
+      .required("Email is required")
+      .email("Invalid email format"),
+    password: Yup
+      .string()
+      .required("Password is required")
   }),
 );

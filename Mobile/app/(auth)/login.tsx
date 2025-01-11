@@ -1,16 +1,21 @@
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Alert, ScrollView, Text, View } from "react-native";
-import React, { useCallback, useState } from "react";
+import {SafeAreaView} from "react-native-safe-area-context";
+import {Alert, ScrollView, View} from "react-native";
+import React, {useCallback, useState} from "react";
 import InputField from "@/components/InputField";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { faAt, faLock, faPerson } from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-native-fontawesome";
+import {faAt, faLock, faPerson} from "@fortawesome/free-solid-svg-icons";
 import CustomButton from "@/components/CustomButton";
 import OAuth from "@/components/OAuth";
-import { Link, router } from "expo-router";
-import { useSignIn } from "@clerk/clerk-expo";
+import {Link, router} from "expo-router";
+import {useSignIn} from "@clerk/clerk-expo";
+import {Button, Icon, Text, TextInput, useTheme} from 'react-native-paper';
+import {initialRegisterForm, registerFormSchema} from "@/app/(auth)/register.types";
+import { Formik } from "formik";
+import {initialLoginForm, loginFormSchema} from "@/app/(auth)/login.types";
 
 const Login = () => {
-  const { signIn, setActive, isLoaded } = useSignIn();
+  const theme = useTheme();
+  const {signIn, setActive, isLoaded} = useSignIn();
 
   const [form, setForm] = useState({
     email: "",
@@ -27,7 +32,7 @@ const Login = () => {
       });
 
       if (signInAttempt.status === "complete") {
-        await setActive({ session: signInAttempt.createdSessionId });
+        await setActive({session: signInAttempt.createdSessionId});
         router.replace("/(root)/(tabs)/home");
       } else {
         // See https://clerk.com/docs/custom-flows/error-handling for more info on error handling
@@ -44,42 +49,51 @@ const Login = () => {
     <ScrollView className="flex-1 bg-white">
       <View className="flex-1 bg-white relative w-full h-[250]">
         <View className="text-2xl text-black font-JakartaSemiBold absolute bottom-5 left-5">
-          <Text className="text-2xl text-black font-JakartaSemiBold absolute bottom-5 left-5">
+          <Text variant='headlineSmall'>
             Log in
           </Text>
         </View>
       </View>
-      <View className="p-5">
-        <InputField
-          label="Email"
-          placeholder="Enter email"
-          Icon={() => <FontAwesomeIcon icon={faAt} />}
-          textContentType="emailAddress"
-          value={form.email}
-          onChangeText={(value) => setForm({ ...form, email: value })}
-        />
-        <InputField
-          label="Password"
-          placeholder="Enter password"
-          Icon={() => <FontAwesomeIcon icon={faLock} />}
-          secureTextEntry={true}
-          textContentType="password"
-          value={form.password}
-          onChangeText={(value) => setForm({ ...form, password: value })}
-        />
-        <CustomButton
-          title="Sign Up"
-          onPress={onSignInPress}
-          className="mt-6"
-        />
-        <OAuth />
+      <View className="flex flex-col m-5">
+        <Formik 
+          initialValues={initialLoginForm} 
+          validationSchema={loginFormSchema} 
+          onSubmit={onSignInPress}>
+          {({handleChange, handleBlur, handleSubmit, values, errors}) => (
+            <View className='gap-3'>
+              <InputField
+                label="Email"
+                placeholder="Enter email"
+                iconName='at'
+                textContentType="emailAddress"
+                value={values.email}
+                onChangeText={handleChange("email")}
+                onBlur={handleBlur}
+                error={errors.email}
+              />
+              <InputField
+                label="Password"
+                placeholder="Enter password"
+                iconName='lock'
+                secureTextEntry={true}
+                textContentType="password"
+                value={values.password}
+                onChangeText={handleChange("password")}
+                onBlur={handleBlur}
+                error={errors.password}
+              />
+              <Button mode='contained' onPress={() => handleSubmit()} className="mt-6">Login</Button>
+            </View>
+          )}
+        </Formik>
+        <OAuth/>
         <Link
           href="/register"
           className="text-lg text-center text-general-200 mt-10"
           replace
         >
           Don&#39;t have an account?{" "}
-          <Text className="text-primary-500">Sign up</Text>
+          <Text style={{color: theme.colors.tertiary}}>Sign up</Text>
         </Link>
       </View>
     </ScrollView>

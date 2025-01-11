@@ -1,16 +1,19 @@
-import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import {useFonts} from "expo-font";
+import {Stack} from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import React, { useEffect } from "react";
+import React, {useCallback, useEffect} from "react";
 import "react-native-reanimated";
 
-import { ClerkProvider, ClerkLoaded } from "@clerk/clerk-expo";
+import {ClerkProvider, ClerkLoaded} from "@clerk/clerk-expo";
 import "../global.css";
-import { tokenCache } from "@/lib/auth";
-import { Provider } from "react-redux";
+import {tokenCache} from "@/lib/auth";
+import {Provider} from "react-redux";
 import store from "@/behavior/store";
-import { MD3DarkTheme, MD3LightTheme, PaperProvider } from "react-native-paper";
-import { useColorScheme } from "react-native";
+import {MD3DarkTheme, MD3LightTheme, PaperProvider} from "react-native-paper";
+import {useColorScheme, View} from "react-native";
+import configureFonts from "react-native-paper/src/styles/fonts";
+import {DefaultTheme, NavigationContainer, ThemeProvider} from "@react-navigation/native";
+import {StatusBar} from "expo-status-bar";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -35,15 +38,6 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
-  if (!loaded) {
-    return null;
-  }
-
-  if (!publishableKey) {
-    throw new Error(
-      "Missing Publishable Key. Please set EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY in your .env",
-    );
-  }
 
   const lightColors = {
     colors: {
@@ -138,6 +132,7 @@ export default function RootLayout() {
   const lightTheme = {
     ...MD3LightTheme,
     ...lightColors,
+    background: "rgb(255,255,255)"
   };
 
   const darkTheme = {
@@ -147,20 +142,55 @@ export default function RootLayout() {
 
   const theme = colorScheme == "dark" ? darkTheme : lightTheme;
 
+  const configuredTheme = {
+    ...theme,
+    // colors: {
+    //   ...theme.colors,
+    //   background: "rgb(255,255,255)",
+    //
+    // },
+    fonts: configureFonts({
+      config: {
+        fontFamily: 'Jakarta'
+      }
+    })
+  }
+
+  const navTheme = useCallback(() => {
+    return {
+      ...DefaultTheme,
+      colors: {...DefaultTheme.colors, background: configuredTheme.colors.background},
+      dark: colorScheme == "dark",
+    };
+  }, [configuredTheme]);
+
+
+  if (!loaded) {
+    return null;
+  }
+
+  if (!publishableKey) {
+    throw new Error(
+      "Missing Publishable Key. Please set EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY in your .env",
+    );
+  }
   return (
     <Provider store={store}>
-      <PaperProvider theme={theme}>
-        <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
-          <ClerkLoaded>
-            <Stack>
-              <Stack.Screen name="index" options={{ headerShown: false }} />
-              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-              <Stack.Screen name="(root)" options={{ headerShown: false }} />
-              <Stack.Screen name="+not-found" />
-            </Stack>
-          </ClerkLoaded>
-        </ClerkProvider>
-      </PaperProvider>
+      <ThemeProvider value={navTheme()}>
+        <PaperProvider theme={configuredTheme}>
+          <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
+            <ClerkLoaded>
+              <Stack>
+                <Stack.Screen name="index" options={{headerShown: false}}/>
+                <Stack.Screen name="(auth)" options={{headerShown: false}}/>
+                <Stack.Screen name="(root)" options={{headerShown: false}}/>
+                <Stack.Screen name="+not-found"/>
+              </Stack>
+              <StatusBar style='auto' />
+            </ClerkLoaded>
+          </ClerkProvider>
+        </PaperProvider>
+      </ThemeProvider>
     </Provider>
   );
 }

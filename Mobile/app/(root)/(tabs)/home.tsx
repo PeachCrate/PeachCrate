@@ -10,9 +10,9 @@ import { setAccessToken } from "@/behavior/auth/authSlice";
 import {
   useHelloQuery,
   useIsCredentialTakenQuery,
-  useIsLoginAndEmailTakenQuery,
   useRegisterMutation,
 } from "@/behavior/auth/authApi";
+import {SafeAreaView} from "react-native-safe-area-context";
 
 const Home = () => {
   const { user } = useUser();
@@ -46,7 +46,7 @@ const Home = () => {
   }
 
   return (
-    <View>
+    <SafeAreaView>
       <SignedIn>
         {/*<Text>*/}
         {/*  Isloading: {isLoadingHello}, data: {helloMessage?.message}*/}
@@ -77,7 +77,7 @@ const Home = () => {
           <Text>Sign up</Text>
         </Link>
       </SignedOut>
-    </View>
+    </SafeAreaView>
   );
 };
 

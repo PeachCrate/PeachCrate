@@ -1,45 +1,41 @@
 import {
   Alert,
-  Button,
-  GestureResponderEvent,
   ScrollView,
-  Text,
   View,
 } from "react-native";
 import InputField from "@/components/InputField";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import {FontAwesomeIcon} from "@fortawesome/react-native-fontawesome";
 import {
-  faPerson,
-  faAt,
-  faLock,
   faCheckCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import CustomButton from "@/components/CustomButton";
 
-import React, { useEffect, useState } from "react";
+import React, {useEffect, useState} from "react";
 import OAuth from "@/components/OAuth";
-import { Link, router } from "expo-router";
-import { ReactNativeModal } from "react-native-modal";
-import { useClerk, useSignUp } from "@clerk/clerk-expo";
+import {Link, router} from "expo-router";
+import {ReactNativeModal} from "react-native-modal";
+import {useClerk, useSignUp} from "@clerk/clerk-expo";
 import {
   authApi,
   useIsCredentialTakenQuery,
   useRegisterMutation,
 } from "@/behavior/auth/authApi";
-import { RegisterRequest } from "@/behavior/auth/types";
-import { useAppDispatch } from "@/behavior/hooks";
-import { setAccessToken } from "@/behavior/auth/authSlice";
-import { Form, Formik, useFormik } from "formik";
+import {RegisterRequest} from "@/behavior/auth/types";
+import {useAppDispatch} from "@/behavior/hooks";
+import {setAccessToken} from "@/behavior/auth/authSlice";
+import {Form, Formik, useFormik} from "formik";
 import {
   initialRegisterForm,
   RegisterForm,
   registerFormSchema,
 } from "@/app/(auth)/register.types";
+import {Button, Text, useTheme} from "react-native-paper";
 
 const Register = () => {
-  const { session } = useClerk();
-  const { isLoaded, signUp, setActive } = useSignUp();
+  const {session} = useClerk();
+  const {isLoaded, signUp, setActive} = useSignUp();
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const theme = useTheme();
   const dispatch = useAppDispatch();
 
   const [form, setForm] = useState<RegisterForm>({
@@ -54,20 +50,10 @@ const Register = () => {
     code: "",
   });
 
-  const [register, { isLoading }] = useRegisterMutation();
-  // const {
-  //   data: isTaken,
-  //   isLoading: isLoadingCredentials,
-  //   isError: isErrorCredentials,
-  //   error: errorCredentials,
-  // } = useIsCredentialTakenQuery({ login: form.name, email: form.email });
-
-  // useEffect(() => {
-  //   if (isErrorCredentials) Alert.alert(errorCredentials.data);
-  // }, [isErrorCredentials]);
+  const [register, {isLoading}] = useRegisterMutation();
 
   useEffect(() => {
-    const t = dispatch(authApi.endpoints.hello.initiate(null));
+    const t = dispatch(authApi.endpoints.hello.initiate(null)) as any;
     console.log("t", t.data);
   }, []);
 
@@ -83,11 +69,11 @@ const Register = () => {
       });
 
       // Send user an email with verification code
-      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+      await signUp.prepareEmailAddressVerification({strategy: "email_code"});
 
       // Set 'pendingVerification' to true to display second form
       // and capture OTP code
-      setVerification({ ...verification, state: "pending" });
+      setVerification({...verification, state: "pending"});
     } catch (err: any) {
       // See https://clerk.com/docs/custom-flows/error-handling
       // for more info on error handling
@@ -109,7 +95,7 @@ const Register = () => {
       // and redirect the user
       if (signUpAttempt.status === "complete") {
         /// TODO: create user in db
-        await setActive({ session: signUpAttempt.createdSessionId });
+        await setActive({session: signUpAttempt.createdSessionId});
         const request: RegisterRequest = {
           login: form.name,
           email: form.email,
@@ -119,7 +105,7 @@ const Register = () => {
         const resp = await register(request).unwrap();
         dispatch(setAccessToken(resp.accessToken.token));
         dispatch(setAccessToken(resp.refreshToken.token));
-        setVerification({ ...verification, state: "success" });
+        setVerification({...verification, state: "success"});
         //router.replace("/");
       } else {
         // If the status is not complete, check why. User may need to
@@ -147,19 +133,19 @@ const Register = () => {
     <ScrollView className="flex-1 bg-white">
       <View className="flex-1 bg-white relative w-full h-[250]">
         <View className="text-2xl text-black font-JakartaSemiBold absolute bottom-5 left-5">
-          <Text className="text-2xl text-black font-JakartaSemiBold absolute bottom-5 left-5">
+          <Text variant='headlineSmall'>
             Create new account
           </Text>
         </View>
       </View>
       <View className="p-5">
-        <Formik initialValues={initialRegisterForm} onSubmit={onSignUpPress}>
-          {({ handleChange, handleBlur, handleSubmit, values, errors }) => (
-            <View>
+        <Formik initialValues={initialRegisterForm} validationSchema={registerFormSchema} onSubmit={onSignUpPress}>
+          {({handleChange, handleBlur, handleSubmit, values, errors}) => (
+            <View className='gap-3'>
               <InputField
                 label="Name"
                 placeholder="Enter name"
-                Icon={() => <FontAwesomeIcon icon={faPerson} />}
+                iconName='account'
                 value={values.name}
                 onChangeText={handleChange("name")}
                 onBlur={handleBlur}
@@ -168,7 +154,7 @@ const Register = () => {
               <InputField
                 label="Email"
                 placeholder="Enter email"
-                Icon={() => <FontAwesomeIcon icon={faAt} />}
+                iconName='at'
                 textContentType="emailAddress"
                 value={values.email}
                 onChangeText={handleChange("email")}
@@ -178,7 +164,7 @@ const Register = () => {
               <InputField
                 label="Password"
                 placeholder="Enter password"
-                Icon={() => <FontAwesomeIcon icon={faLock} />}
+                iconName='lock'
                 secureTextEntry={true}
                 textContentType="password"
                 value={values.password}
@@ -186,25 +172,27 @@ const Register = () => {
                 onBlur={handleBlur}
                 error={errors.password}
               />
-              <CustomButton
-                title="Sign Up"
+              <Button
                 onPress={() => handleSubmit()}
-                className="mt-6"
-              />
+                className="mt-3"
+                mode='contained'
+              >
+                Sign Up
+              </Button>
             </View>
           )}
         </Formik>
 
-        <OAuth />
+        <OAuth/>
         <Link
           href="/login"
           className="text-lg text-center text-general-200 mt-10"
           replace
         >
           Already have an account?{" "}
-          <Text className="text-primary-500">Log In</Text>
+          <Text style={{color: theme.colors.tertiary}}>Log In</Text>
         </Link>
-        <View id="clerk-captcha" />
+        <View id="clerk-captcha"/>
         <ReactNativeModal
           isVisible={verification.state === "pending"}
           onModalHide={() => {
@@ -221,16 +209,16 @@ const Register = () => {
             <InputField
               label="Code"
               placeholder="123456"
-              Icon={() => <FontAwesomeIcon icon={faLock} />}
+              iconName='lock'
               keyboardType="numeric"
               value={verification.code}
               onChangeText={(code) =>
-                setVerification({ ...verification, code })
+                setVerification({...verification, code})
               }
               error={""}
             />
             {verification.error && (
-              <Text className="text-red-500 text-sm mt-1"></Text>
+              <Text className="text-red-500 text-sm mt-1">{verification.error}</Text>
             )}
             <CustomButton
               title="Verify Email"

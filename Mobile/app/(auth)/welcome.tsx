@@ -18,7 +18,7 @@ const Welcome = () => {
 
   const [showProfilesModal, setShowProfilesModal] = useState(false);
   return (
-    <SafeAreaView className="flex h-full items-center justify-between bg-white">
+    <SafeAreaView className="flex h-full items-center justify-between">
       {showAccountsButton && (
         <TouchableOpacity
           onPress={() => {
@@ -26,16 +26,13 @@ const Welcome = () => {
           }}
           className="w-full flex justify-start items-start p-5"
         >
-          <Text className="text-black text-md font-JakartaBold">
+          <Text className="text-black text-md font-JakartaBold" >
             Pick available account
           </Text>
         </TouchableOpacity>
       )}
       <View className="flex pb-96">
         <Text variant="bodyLarge">Our beautiful welcome page</Text>
-        <Button mode="contained" icon={"coffee"}>
-          Test
-        </Button>
       </View>
       <View className="flex flex-row p-5 w-full">
         <Button
