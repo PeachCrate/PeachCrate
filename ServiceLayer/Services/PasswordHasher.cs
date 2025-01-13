@@ -41,7 +41,7 @@ public class PasswordHasher
         var jwtToken = new JwtToken
         {
             Token = CreateToken(user, isRefreshToken),
-            ExpiresAt = DateTime.UtcNow.AddDays(7),
+            ExpiresAt = DateTime.UtcNow.AddDays(isRefreshToken ? 31 : 7),
             IssuedAt = DateTime.UtcNow
         };
 

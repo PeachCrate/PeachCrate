@@ -1,20 +1,23 @@
-import { SafeAreaView } from "react-native-safe-area-context";
-import { TouchableOpacity, View } from "react-native";
-import { router } from "expo-router";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { faSpider } from "@fortawesome/free-solid-svg-icons/faSpider";
-import { faMugSaucer } from "@fortawesome/free-solid-svg-icons/faMugSaucer";
+import {SafeAreaView} from "react-native-safe-area-context";
+import {TouchableOpacity, View} from "react-native";
+import {router} from "expo-router";
+import {FontAwesomeIcon} from "@fortawesome/react-native-fontawesome";
+import {faSpider} from "@fortawesome/free-solid-svg-icons/faSpider";
+import {faMugSaucer} from "@fortawesome/free-solid-svg-icons/faMugSaucer";
 import CustomButton from "@/components/CustomButton";
-import React, { useMemo, useState } from "react";
-import { useClerk } from "@clerk/clerk-expo";
+import React, {useEffect, useMemo, useState} from "react";
+import {useClerk} from "@clerk/clerk-expo";
 import PickUserModal from "@/components/PickUserModal";
-import { Button, Text } from "react-native-paper";
+import {Button, Text} from "react-native-paper";
+import {useHelloQuery} from "@/behavior/auth/authApi";
 
 const Welcome = () => {
-  const { client } = useClerk();
+  const {client} = useClerk();
   const showAccountsButton = useMemo(() => {
     return client.activeSessions.length > 0;
   }, [client.activeSessions]);
+  const {data} = useHelloQuery(null);
+  const [message, setMessage] = useState();
 
   const [showProfilesModal, setShowProfilesModal] = useState(false);
   return (
@@ -26,11 +29,17 @@ const Welcome = () => {
           }}
           className="w-full flex justify-start items-start p-5"
         >
-          <Text className="text-black text-md font-JakartaBold" >
+          <Text className="text-black text-md font-JakartaBold">
             Pick available account
           </Text>
         </TouchableOpacity>
       )}
+
+      <View>
+        <Text>{data ? data.message : "nothing"}</Text>
+        
+      </View>
+
       <View className="flex pb-96">
         <Text variant="bodyLarge">Our beautiful welcome page</Text>
       </View>

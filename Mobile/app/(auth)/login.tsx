@@ -10,7 +10,7 @@ import {Link, router} from "expo-router";
 import {useSignIn} from "@clerk/clerk-expo";
 import {Button, Icon, Text, TextInput, useTheme} from 'react-native-paper';
 import {initialRegisterForm, registerFormSchema} from "@/app/(auth)/register.types";
-import { Formik } from "formik";
+import {Formik} from "formik";
 import {initialLoginForm, loginFormSchema} from "@/app/(auth)/login.types";
 
 const Login = () => {
@@ -46,18 +46,18 @@ const Login = () => {
   }, [isLoaded, form]);
 
   return (
-    <ScrollView className="flex-1 bg-white">
-      <View className="flex-1 bg-white relative w-full h-[250]">
-        <View className="text-2xl text-black font-JakartaSemiBold absolute bottom-5 left-5">
+    <ScrollView className="flex-1">
+      <View className="flex-1 relative w-full h-[250]">
+        <View className="absolute bottom-5 left-5">
           <Text variant='headlineSmall'>
             Log in
           </Text>
         </View>
       </View>
       <View className="flex flex-col m-5">
-        <Formik 
-          initialValues={initialLoginForm} 
-          validationSchema={loginFormSchema} 
+        <Formik
+          initialValues={initialLoginForm}
+          validationSchema={loginFormSchema}
           onSubmit={onSignInPress}>
           {({handleChange, handleBlur, handleSubmit, values, errors}) => (
             <View className='gap-3'>

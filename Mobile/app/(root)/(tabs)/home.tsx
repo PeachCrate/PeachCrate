@@ -48,10 +48,6 @@ const Home = () => {
   return (
     <SafeAreaView>
       <SignedIn>
-        {/*<Text>*/}
-        {/*  Isloading: {isLoadingHello}, data: {helloMessage?.message}*/}
-        {/*</Text>*/}
-        {/*{isError ? <Text>{error.data}</Text>}*/}
         <Text>Hello {user?.emailAddresses[0].emailAddress}</Text>
 
         <Text>Hello {clerkUser?.emailAddresses[0].emailAddress}</Text>

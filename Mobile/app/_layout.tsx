@@ -1,7 +1,7 @@
 import {useFonts} from "expo-font";
 import {Stack} from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import React, {useCallback, useEffect} from "react";
+import React, {useCallback, useEffect, useMemo} from "react";
 import "react-native-reanimated";
 
 import {ClerkProvider, ClerkLoaded} from "@clerk/clerk-expo";
@@ -156,13 +156,13 @@ export default function RootLayout() {
     })
   }
 
-  const navTheme = useCallback(() => {
+  const navTheme = useMemo(() => {
     return {
       ...DefaultTheme,
       colors: {...DefaultTheme.colors, background: configuredTheme.colors.background},
       dark: colorScheme == "dark",
     };
-  }, [configuredTheme]);
+  }, [colorScheme]);
 
 
   if (!loaded) {
@@ -176,7 +176,7 @@ export default function RootLayout() {
   }
   return (
     <Provider store={store}>
-      <ThemeProvider value={navTheme()}>
+      <ThemeProvider value={navTheme}>
         <PaperProvider theme={configuredTheme}>
           <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
             <ClerkLoaded>

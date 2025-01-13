@@ -22,7 +22,7 @@ namespace Presentation.Controllers
         [HttpGet("hello")]
         public IActionResult Hello()
         {
-            var message = "hello world!!!";
+            var message = "hello world---";
             return Ok(new Resp(message));
         }
         [HttpPost("register")]

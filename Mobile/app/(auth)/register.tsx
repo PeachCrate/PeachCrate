@@ -130,8 +130,8 @@ const Register = () => {
   };
 
   return (
-    <ScrollView className="flex-1 bg-white">
-      <View className="flex-1 bg-white relative w-full h-[250]">
+    <ScrollView className="flex-1">
+      <View className="flex-1 relative w-full h-[250]">
         <View className="text-2xl text-black font-JakartaSemiBold absolute bottom-5 left-5">
           <Text variant='headlineSmall'>
             Create new account

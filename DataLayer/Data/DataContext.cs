@@ -7,8 +7,8 @@ public class DataContext : DbContext
 {
     public DataContext(DbContextOptions<DataContext> options) : base(options)
     {
-
     }
+
     public DbSet<User> Users { get; set; }
     public DbSet<Group> Groups { get; set; }
     public DbSet<Product> Products { get; set; }
@@ -19,12 +19,4 @@ public class DataContext : DbContext
     public DbSet<ShoppingList> ShoppingLists { get; set; }
     public DbSet<ShoppingProduct> ShoppingProducts { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<User>()
-            .ToTable(tb => tb.HasTrigger("tr_AddUser"))
-            .ToTable(tb => tb.HasTrigger("tr_UpdateUser"))
-            .ToTable(tb => tb.HasTrigger("tr_DeleteUser"));
-    }
 }
