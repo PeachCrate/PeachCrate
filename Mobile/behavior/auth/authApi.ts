@@ -7,7 +7,7 @@ import {
 } from "@/behavior/auth/types";
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: "http://10.0.2.2:5093/api",
+  baseUrl: "http://192.168.10.164:8080/api",
 });
 
 export const authApi = createApi({

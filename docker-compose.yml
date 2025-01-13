@@ -1,0 +1,38 @@
+services:
+  presentation-service:
+    container_name: WebApi
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+      - "8085:8085"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - MSSQL_SA_PASSWORD=PeachCrate22
+    volumes:
+      - ./Presentation:/src/Presentation
+      - ./DataLayer:/src/DataLayer
+      - ./Models:/src/Models
+      - ./ServiceLayer:/src/ServiceLayer
+    depends_on:
+      - sqlserver
+    networks:
+      - PeachCrate
+        
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver-container
+    ports:
+      - "1433:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=PeachCrate22
+    networks:
+      - PeachCrate
+
+volumes:
+  sql_data:
+
+networks:
+  PeachCrate:
