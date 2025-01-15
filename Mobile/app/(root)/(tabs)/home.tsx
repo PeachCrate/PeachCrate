@@ -1,25 +1,25 @@
-import { Text, View } from "react-native";
+import {View} from "react-native";
 import React from "react";
-import { SignedIn, SignedOut, useClerk, useUser } from "@clerk/clerk-expo";
-import { Link, router } from "expo-router";
-import CustomButton from "@/components/CustomButton";
-import { useAppDispatch, useAppSelector } from "@/behavior/hooks";
-import { RootState } from "@/behavior/store";
-import { RegisterRequest } from "@/behavior/auth/types";
-import { setAccessToken } from "@/behavior/auth/authSlice";
+import {SignedIn, SignedOut, useClerk, useUser} from "@clerk/clerk-expo";
+import {Link, router} from "expo-router";
+import {useAppDispatch, useAppSelector} from "@/behavior/hooks";
+import {RootState} from "@/behavior/store";
+import {RegisterRequest} from "@/behavior/auth/types";
+import {setAccessToken} from "@/behavior/auth/authSlice";
 import {
   useHelloQuery,
   useIsCredentialTakenQuery,
   useRegisterMutation,
 } from "@/behavior/auth/authApi";
 import {SafeAreaView} from "react-native-safe-area-context";
+import {Button, Text} from "react-native-paper";
 
 const Home = () => {
-  const { user } = useUser();
-  const { user: clerkUser, client, session } = useClerk();
+  const {user} = useUser();
+  const {user: clerkUser, client, session} = useClerk();
   const userId = useAppSelector((state: RootState) => state.auth.clientId);
   console.log("userid", userId);
-  const [register, { isLoading }] = useRegisterMutation();
+  const [register, {isLoading}] = useRegisterMutation();
   //const { data: helloMessage, isLoading: isLoadingHello } = useHelloQuery(null, {skip});
   //const {data: isCredentialsTaken, {isLoading, error}} = useIsCredentialTakenQuery();
   const dispatch = useAppDispatch();
@@ -41,29 +41,29 @@ const Home = () => {
   }
 
   function foo() {
-    const { data } = useHelloQuery(null);
-    console.log("data", data);
+    // const {data} = useHelloQuery(null);
+    // console.log("data", data);
   }
 
   return (
     <SafeAreaView>
       <SignedIn>
-        <Text>Hello {user?.emailAddresses[0].emailAddress}</Text>
+        <Text variant='bodyMedium'>Hello {user?.emailAddresses[0].emailAddress}</Text>
 
-        <Text>Hello {clerkUser?.emailAddresses[0].emailAddress}</Text>
+        <Text variant='bodyMedium'>Hello {clerkUser?.emailAddresses[0].emailAddress}</Text>
         <View>
           {client.sessions.map((s) => (
-            <Text key={s.id}>
+            <Text key={s.id} variant='bodyMedium'>
               {s.status} {s.id} {s.user?.emailAddresses[0].emailAddress}
             </Text>
           ))}
         </View>
-        <CustomButton
-          title={"Go to onboarding"}
+        <Button
           onPress={() => router.replace("/(auth)/welcome")}
-        />
-        <CustomButton title={"Test foo"} onPress={() => foo()} />
-        <CustomButton title={"Test request"} onPress={() => test()} />
+          mode='contained'
+        >Go to onboarding</Button>
+        <Button mode='contained' onPress={() => foo()}>Test foo</Button>
+        <Button mode='contained' onPress={() => test()}>Test request</Button>
       </SignedIn>
       <SignedOut>
         <Link href="../../(auth)/login">

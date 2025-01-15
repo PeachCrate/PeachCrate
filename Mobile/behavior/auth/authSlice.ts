@@ -1,5 +1,7 @@
-import { createSlice } from "@reduxjs/toolkit";
-import type { PayloadAction } from "@reduxjs/toolkit";
+import {createSlice} from "@reduxjs/toolkit";
+import type {PayloadAction} from "@reduxjs/toolkit";
+import {Tokens} from "@/behavior/auth/types";
+import * as SecureStore from 'expo-secure-store';
 
 export interface AuthState {
   clientId: string;
@@ -13,7 +15,7 @@ const initialState: AuthState = {
   refreshToken: "",
 };
 
-export const counterSlice = createSlice({
+export const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
@@ -26,11 +28,23 @@ export const counterSlice = createSlice({
     setRefreshToken: (state, action: PayloadAction<string>) => {
       state.refreshToken = action.payload;
     },
+    setTokens: (state, action: PayloadAction<Tokens>) => {
+      state.accessToken = action.payload.accessToken.token;
+      state.refreshToken = action.payload.refreshToken.token;
+      SecureStore.setItem('accessToken', action.payload.accessToken.token);
+      SecureStore.setItem('refreshToken', action.payload.refreshToken.token)
+    },
+    clearTokens: (state) => {
+      state.accessToken = '';
+      state.refreshToken = '';
+      SecureStore.setItem('refreshToken', '');
+      SecureStore.setItem('accessToken', '');
+    }
   },
 });
 
 // Action creators are generated for each case reducer function
-export const { setClientId, setAccessToken, setRefreshToken } =
-  counterSlice.actions;
+export const {setClientId, setAccessToken, setRefreshToken, setTokens, clearTokens} =
+  authSlice.actions;
 
-export default counterSlice.reducer;
+export default authSlice.reducer;

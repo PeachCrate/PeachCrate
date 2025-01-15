@@ -5,7 +5,18 @@ export interface RegisterRequest {
   clerkId: string;
 }
 
-export interface RegisterResponse {
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface OAuthSignInRequest {
+  login: string;
+  email: string;
+  clerkId: string;
+}
+
+export interface Tokens {
   accessToken: AccessToken;
   refreshToken: RefreshToken;
 }

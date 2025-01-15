@@ -12,25 +12,30 @@ namespace Presentation.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthRepository _authRepository;
+        private readonly IUserRepository _userRepository;
 
-        public AuthController(IAuthRepository authRepository)
+        public AuthController(IAuthRepository authRepository, IUserRepository userRepository)
         {
             _authRepository = authRepository;
+            _userRepository = userRepository;
         }
 
         record Resp(string message);
+
         [HttpGet("hello")]
         public IActionResult Hello()
         {
             var message = "hello world---";
             return Ok(new Resp(message));
         }
+
         [HttpPost("register")]
         public async Task<ActionResult<JwtTokensResponse>> Register(RegisterProp registerProp)
         {
             try
             {
-                var tokens = await _authRepository.RegisterUserAsync(registerProp.Login, registerProp.Email, registerProp.Password, registerProp.ClerkId);
+                var tokens = await _authRepository.RegisterUserAsync(registerProp.Login, registerProp.Email,
+                    registerProp.Password, registerProp.ClerkId);
                 return Ok(tokens);
             }
             catch (AuthException exception)
@@ -40,12 +45,27 @@ namespace Presentation.Controllers
         }
 
         public record struct JwtTokensResponse(JwtToken AccessToken, JwtToken RefreshToken);
+
         [HttpPost("login")]
         public async Task<ActionResult<JwtTokensResponse>> Login(LoginProp prop)
         {
             try
             {
-                var (accessJwtToken, refreshJwtToken) = await _authRepository.LoginAsync(prop.LoginOrEmail, prop.Password);
+                var (accessJwtToken, refreshJwtToken) = await _authRepository.LoginAsync(prop.Email, prop.Password);
+                return Ok(new JwtTokensResponse(accessJwtToken, refreshJwtToken));
+            }
+            catch (AuthException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+        }
+        
+        [HttpPost("OAuthSignIn")]
+        public async Task<ActionResult<JwtTokensResponse>> OAuthSignIn(OAuthSignInProp prop)
+        {
+            try
+            {
+                var (accessJwtToken, refreshJwtToken) = await _authRepository.OAuthSignInAsync(prop.Login, prop.Email, prop.ClerkId);
                 return Ok(new JwtTokensResponse(accessJwtToken, refreshJwtToken));
             }
             catch (AuthException exception)
@@ -57,7 +77,7 @@ namespace Presentation.Controllers
         // POST api/<AuthContoller>
         [HttpPost("refreshToken")]
         [Authorize]
-        public async Task<ActionResult<JwtTokensResponse>> RefreshToken(string refreshToken)
+        public async Task<ActionResult<JwtTokensResponse>> RefreshToken([FromBody] string refreshToken)
         {
             try
             {
@@ -71,6 +91,7 @@ namespace Presentation.Controllers
         }
 
         public record IsTakenResponse(bool isCredentialTaken);
+
         [HttpPost("IsCredentialTaken")]
         public async Task<ActionResult<IsTakenResponse>> IsTaken([FromQuery] string? login, [FromQuery] string? email)
         {
@@ -84,6 +105,19 @@ namespace Presentation.Controllers
             catch (AuthException exception)
             {
                 return BadRequest(exception.Message);
+            }
+        }
+
+        [HttpDelete()]
+        public async Task<ActionResult<bool>> DeleteUser()
+        {
+            try
+            {
+                return await _authRepository.DeleteUser();
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
             }
         }
     }

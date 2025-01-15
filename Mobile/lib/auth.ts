@@ -1,6 +1,11 @@
 import * as SecureStore from "expo-secure-store";
 import * as Linking from "expo-linking";
-import { TokenCache } from "@clerk/clerk-expo/dist/cache";
+import {TokenCache} from "@clerk/clerk-expo/dist/cache";
+import {authApi} from "@/behavior/auth/authApi";
+import {OAuthSignInRequest, RegisterRequest} from "@/behavior/auth/types";
+import store, {AppDispatch} from "@/behavior/store";
+import {setTokens} from "@/behavior/auth/authSlice";
+import {StartOAuthFlowParams, StartOAuthFlowReturnType} from "@clerk/clerk-expo";
 
 const createTokenCache = (): TokenCache => {
   return {
@@ -28,27 +33,28 @@ const createTokenCache = (): TokenCache => {
 // SecureStore is not supported on the web
 export const tokenCache = createTokenCache();
 
-export const googleOAuth = async (startOAuthFlow: any) => {
+export const googleOAuth = async (startOAuthFlow: (startOAuthFlowParams?: StartOAuthFlowParams) => Promise<StartOAuthFlowReturnType>, dispatch: AppDispatch) => {
   try {
-    const { createdSessionId, setActive, signUp } = await startOAuthFlow({
+    const {createdSessionId, setActive, signUp} = await startOAuthFlow({
       redirectUrl: Linking.createURL("/(root)/(tabs)/home"),
     });
 
-    if (createdSessionId) {
+    if (createdSessionId && signUp) {
       if (setActive) {
-        await setActive({ session: createdSessionId });
+        await setActive({session: createdSessionId});
 
-        /// TODO: add user creation
-        // if (signUp.createdUserId) {
-        //   await fetchAPI("/(api)/user", {
-        //     method: "POST",
-        //     body: JSON.stringify({
-        //       name: `${signUp.firstName} ${signUp.lastName}`,
-        //       email: signUp.emailAddress,
-        //       clerkId: signUp.createdUserId,
-        //     }),
-        //   });
-        // }
+        if (signUp.createdUserId) {
+          const request: OAuthSignInRequest = {
+            login: signUp.firstName + ' ' + signUp.lastName,
+            email: signUp.emailAddress!,
+            clerkId: signUp.createdUserId,
+          };
+          console.log('req', request);
+          const response = await dispatch(
+            authApi.endpoints.oAuthSignIn.initiate(request)
+          ).unwrap();
+          dispatch(setTokens(response));
+        }
 
         return {
           success: true,

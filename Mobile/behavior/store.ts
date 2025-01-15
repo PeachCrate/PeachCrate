@@ -1,6 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "@/behavior/auth/authSlice";
 import { authApi } from "@/behavior/auth/authApi";
+import {createEpicMiddleware} from "redux-observable";
 
 const store = configureStore({
   reducer: {

@@ -8,8 +8,9 @@ services:
       - "8080:8080"
       - "8085:8085"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - MSSQL_SA_PASSWORD=PeachCrate22
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+      CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
     volumes:
       - ./Presentation:/src/Presentation
       - ./DataLayer:/src/DataLayer
@@ -19,6 +20,7 @@ services:
       - sqlserver
     networks:
       - PeachCrate
+    entrypoint: ["/app/wait-for-it.sh", "sqlserver-container:1433", "--", "dotnet", "Presentation.dll"]
         
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -26,10 +28,12 @@ services:
     ports:
       - "1433:1433"
     environment:
-      - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=PeachCrate22
+      ACCEPT_EULA: ${ACCEPT_EULA}
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
     networks:
       - PeachCrate
+    volumes:
+      - sql_data:/var/opt/mssql
 
 volumes:
   sql_data:

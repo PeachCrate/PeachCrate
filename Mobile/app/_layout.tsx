@@ -14,6 +14,7 @@ import {useColorScheme, View} from "react-native";
 import configureFonts from "react-native-paper/src/styles/fonts";
 import {DefaultTheme, NavigationContainer, ThemeProvider} from "@react-navigation/native";
 import {StatusBar} from "expo-status-bar";
+import {ToastProvider} from "react-native-paper-toast";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -178,17 +179,20 @@ export default function RootLayout() {
     <Provider store={store}>
       <ThemeProvider value={navTheme}>
         <PaperProvider theme={configuredTheme}>
-          <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
-            <ClerkLoaded>
-              <Stack>
-                <Stack.Screen name="index" options={{headerShown: false}}/>
-                <Stack.Screen name="(auth)" options={{headerShown: false}}/>
-                <Stack.Screen name="(root)" options={{headerShown: false}}/>
-                <Stack.Screen name="+not-found"/>
-              </Stack>
-              <StatusBar style='auto' />
-            </ClerkLoaded>
-          </ClerkProvider>
+          <ToastProvider>
+
+            <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
+              <ClerkLoaded>
+                <Stack>
+                  <Stack.Screen name="index" options={{headerShown: false}}/>
+                  <Stack.Screen name="(auth)" options={{headerShown: false}}/>
+                  <Stack.Screen name="(root)" options={{headerShown: false}}/>
+                  <Stack.Screen name="+not-found"/>
+                </Stack>
+                <StatusBar style='auto'/>
+              </ClerkLoaded>
+            </ClerkProvider>
+          </ToastProvider>
         </PaperProvider>
       </ThemeProvider>
     </Provider>

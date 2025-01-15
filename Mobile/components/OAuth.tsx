@@ -7,24 +7,27 @@ import {router} from "expo-router";
 import {useOAuth} from "@clerk/clerk-expo";
 import {googleOAuth} from "@/lib/auth";
 import {Button, Text} from "react-native-paper";
+import {useToast} from "react-native-paper-toast";
+import {useAppDispatch} from "@/behavior/hooks";
 
 const OAuth = () => {
+  const toast = useToast();
   const {startOAuthFlow} = useOAuth({strategy: "oauth_google"});
-
+  const dispatch = useAppDispatch();
+  
   const handleGoogleSignIn = async () => {
-    const result = await googleOAuth(startOAuthFlow);
-
+    const result = await googleOAuth(startOAuthFlow, dispatch);
+    console.log('AUTH RESULT', result);
     if (result.code === "session_exists") {
-      Alert.alert("Success", "Session exists. Redirecting to home screen.");
+      toast.show({type: "success", message: "Session exists. Redirecting to home screen."});
       router.replace("/(root)/(tabs)/home");
     }
-
-    Alert.alert(result.success ? "Success" : "Error", result.message);
+    toast.show({type: result.success ? 'success' : 'error', message: result.message})
   };
 
   return (
     <View>
-      <View className="flex flex-row justify-center items-center mt-3 gap-x-3 mb-5">
+      <View className="flex flex-row justify-center items-center mt-3 gap-x-3 mb-3">
         <View className="flex-1 h-[1px] bg-general-100"/>
         <Text variant='bodyLarge'>Or</Text>
         <View className="flex-1 h-[1px] bg-general-100"/>

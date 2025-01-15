@@ -1,19 +1,19 @@
 import * as Yup from "yup";
 import {createYupSchema} from "@/behavior/types";
 
-export interface RegisterForm {
+export interface RegisterFormType {
   name: string;
   email: string;
   password: string;
 }
 
-export const initialRegisterForm: RegisterForm = {
+export const initialRegisterForm: RegisterFormType = {
   name: "",
   email: "",
   password: "",
 };
 
-export const registerFormSchema = createYupSchema<RegisterForm>(
+export const registerFormSchema = createYupSchema<RegisterFormType>(
   Yup.object().shape({
     name: Yup
       .string()

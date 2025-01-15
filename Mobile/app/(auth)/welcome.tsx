@@ -16,9 +16,16 @@ const Welcome = () => {
   const showAccountsButton = useMemo(() => {
     return client.activeSessions.length > 0;
   }, [client.activeSessions]);
-  const {data} = useHelloQuery(null);
+  const {data, isError, error} = useHelloQuery(null);
   const [message, setMessage] = useState();
-
+  useEffect(() => {
+    fetch('http://192.168.202.92:8080/api/auth/hello')
+      .then(json => {console.log('jsonBEF', json); return json;})
+      .then(response => response.json())
+      .then(json => console.log('json', json))
+    
+  }, []);
+  
   const [showProfilesModal, setShowProfilesModal] = useState(false);
   return (
     <SafeAreaView className="flex h-full items-center justify-between">
@@ -37,7 +44,7 @@ const Welcome = () => {
 
       <View>
         <Text>{data ? data.message : "nothing"}</Text>
-        
+        <Text>{isError ? error?.toString() : "no error"}</Text>
       </View>
 
       <View className="flex pb-96">

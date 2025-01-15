@@ -22,10 +22,10 @@ const InputField = ({
   return (
     <>
       <TextInput
-        theme={{roundness: 30}}
+        theme={{roundness: 10}}
         label={label}
         placeholder={props.placeholder}
-        mode='outlined'
+        mode='flat'
         textContentType='nickname'
         value={props.value}
         onChangeText={props.onChangeText}

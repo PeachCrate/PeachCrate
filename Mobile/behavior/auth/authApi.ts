@@ -1,25 +1,42 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import {BaseQueryArg, createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react";
 import {
   RegisterRequest,
-  RegisterResponse,
+  Tokens,
   HelloResp,
-  IsLoginAndEmailTakenRequest,
+  IsLoginAndEmailTakenRequest, LoginRequest, OAuthSignInRequest,
 } from "@/behavior/auth/types";
-
-const baseQuery = fetchBaseQuery({
-  baseUrl: "http://192.168.10.164:8080/api",
-});
+import {baseQuery} from "@/behavior/baseQuery";
 
 export const authApi = createApi({
   reducerPath: "authApi", // Define a reducer path
   baseQuery,
   tagTypes: ["Auth"], // Add relevant tag types for caching/invalidations
   endpoints: (builder) => ({
-    register: builder.mutation<RegisterResponse, RegisterRequest>({
+    register: builder.mutation<Tokens, RegisterRequest>({
       query: (request) => ({
         url: "/Auth/register",
         method: "POST",
         body: request,
+      }),
+    }),
+    login: builder.mutation<Tokens, LoginRequest>({
+      query: (request) => ({
+        url: '/Auth/login',
+        method: "POST",
+        body: request,
+      }),
+    }),
+    oAuthSignIn: builder.mutation<Tokens, OAuthSignInRequest>({
+      query: (request) => ({
+        url: '/Auth/OAuthSignIn',
+        method: "POST",
+        body: request
+      })
+    }),
+    deleteAccount: builder.mutation<string, null>({
+      query: (request) => ({
+        url: '/auth/',
+        method: "DELETE",
       }),
     }),
     isCredentialTaken: builder.query<boolean, IsLoginAndEmailTakenRequest>({
@@ -34,5 +51,12 @@ export const authApi = createApi({
 });
 
 // Export hooks for usage in functional components
-export const { useRegisterMutation, useHelloQuery, useIsCredentialTakenQuery } =
+export const { 
+  useRegisterMutation, 
+  useHelloQuery, 
+  useIsCredentialTakenQuery, 
+  useLoginMutation,
+  useDeleteAccountMutation,
+  useOAuthSignInMutation,
+} =
   authApi;

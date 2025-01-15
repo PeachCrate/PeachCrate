@@ -5,6 +5,9 @@ using Models.Models;
 using Models.Props;
 using ServiceLayer.Services;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using Microsoft.EntityFrameworkCore;
 using Models.Responses;
 
 namespace DataLayer.Repositories.Implementations;
@@ -57,6 +60,32 @@ public class AuthRepository : IAuthRepository
         };
 
         await _userRepository.AddUserAsync(user);
+        Group userGroup = new()
+        {
+            IsUserGroup = true,
+            CreationDate = DateTime.UtcNow,
+            Title = user.Login,
+            Users = [user]
+        };
+        await _groupRepository.AddGroupAsync(userGroup);
+        return await GenerateTokens(user);
+    }
+
+    public async Task<JwtTokensResponse> OAuthSignInAsync(string login, string email, string clerkId)
+    {
+        var existingUser = await _dataContext.Users.FirstOrDefaultAsync(user => user.ClerkId == clerkId);
+        if (existingUser is not null)
+            return await GenerateTokens(existingUser);
+        
+        User user = new()
+        {
+            Login = login,
+            Email = email,
+            RegistrationDate = DateTime.UtcNow,
+            ClerkId = clerkId,
+        };
+        await _userRepository.AddUserAsync(user);
+        
         Group userGroup = new()
         {
             IsUserGroup = true,
@@ -128,6 +157,37 @@ public class AuthRepository : IAuthRepository
 
         generatedRefreshToken.User.RefreshToken = null;
         return new JwtTokensResponse(accessJwtToken, generatedRefreshJwtToken);
+    }
+
+    public async Task<bool> DeleteUser()
+    {
+        string GetClerkId(User? user)
+        {
+            var clerkId = _userService.GetClerkId();
+            if (clerkId is not null)
+                return clerkId;
+            
+            if (user is null || user.ClerkId is null)
+                throw new Exception("User information is corrupted.");
+            return user.ClerkId;
+        }
+        
+        var userId = _userService.GetUserId();
+        var user = await _userRepository.GetUserAsync(userId);
+        var clerkId = GetClerkId(user);
+        
+        using var httpClient = new HttpClient();
+
+        var secretKey = Environment.GetEnvironmentVariable("CLERK_SECRET_KEY");
+        if (secretKey is null)
+            throw new Exception("CLERK_SECRET_KEY not found.");
+        httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + secretKey);
+        httpClient.BaseAddress = new Uri("https://api.clerk.com/");
+        var response = await httpClient.DeleteAsync($"v1/users/{clerkId}");
+        if (!response.IsSuccessStatusCode)
+            throw new Exception(response.ReasonPhrase);
+        await _userRepository.DeleteUserAsync(user!);
+        return true;
     }
 
     public async Task<bool> IsCredentialTaken(string login, string email)

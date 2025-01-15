@@ -51,17 +51,17 @@ public class PasswordHasher
     {
         List<Claim> claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, user.Login),
-                new Claim(ClaimTypes.Role, "User"),
-                new Claim("UserId", user.UserId!.Value.ToString()),
-                new Claim("IsRefreshToken", isRefreshToken.ToString()),
+                new(ClaimTypes.Name, user.Login),
+                new(ClaimTypes.Role, "User"),
+                new("UserId", user.UserId!.Value.ToString()),
+                new("IsRefreshToken", isRefreshToken.ToString()),
+                new("ClerkId", user.ClerkId!),
             };
         var secretKey = _configuration.GetSection("JWT:Token").Value!.ToString();
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
 
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
-
-
+        
         var token = new JwtSecurityToken(
             claims: claims,
             expires: isRefreshToken ? DateTime.UtcNow.AddDays(30) : DateTime.UtcNow.AddDays(1),
