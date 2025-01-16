@@ -1,8 +1,6 @@
 import {View, Alert} from "react-native";
 import React from "react";
-import {FontAwesomeIcon} from "@fortawesome/react-native-fontawesome";
-import {faGoogle} from "@fortawesome/free-brands-svg-icons";
-import CustomButton from "@/components/CustomButton";
+
 import {router} from "expo-router";
 import {useOAuth} from "@clerk/clerk-expo";
 import {googleOAuth} from "@/lib/auth";

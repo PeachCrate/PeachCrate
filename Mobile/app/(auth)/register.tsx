@@ -3,10 +3,10 @@ import {
   View,
 } from "react-native";
 import React, {useEffect, useState} from "react";
-import OAuth from "@/components/OAuth";
-import {Link, router} from "expo-router";
-import {Button, Text, useTheme} from "react-native-paper";
+import {Link} from "expo-router";
+import { Text, useTheme} from "react-native-paper";
 import RegisterForm from "@/components/auth/RegisterForm";
+import OAuth from "@/components/auth/OAuth";
 
 const Register = () => {
   const theme = useTheme();

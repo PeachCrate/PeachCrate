@@ -1,5 +1,5 @@
 import { Alert, View } from "react-native";
-import InputField from "@/components/InputField";
+import InputField from "@/components/basic/InputField";
 import { Button } from "react-native-paper";
 import React from "react";
 import { router } from "expo-router";

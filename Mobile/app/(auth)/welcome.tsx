@@ -1,15 +1,11 @@
 import {SafeAreaView} from "react-native-safe-area-context";
 import {TouchableOpacity, View} from "react-native";
 import {router} from "expo-router";
-import {FontAwesomeIcon} from "@fortawesome/react-native-fontawesome";
-import {faSpider} from "@fortawesome/free-solid-svg-icons/faSpider";
-import {faMugSaucer} from "@fortawesome/free-solid-svg-icons/faMugSaucer";
-import CustomButton from "@/components/CustomButton";
 import React, {useEffect, useMemo, useState} from "react";
 import {useClerk} from "@clerk/clerk-expo";
-import PickUserModal from "@/components/PickUserModal";
 import {Button, Text} from "react-native-paper";
 import {useHelloQuery} from "@/behavior/auth/authApi";
+import PickUserModal from "@/components/auth/PickUserModal";
 
 const Welcome = () => {
   const {client} = useClerk();

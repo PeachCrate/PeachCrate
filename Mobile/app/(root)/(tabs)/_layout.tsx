@@ -10,32 +10,27 @@ import {
 import { View } from "react-native";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { faProductHunt } from "@fortawesome/free-brands-svg-icons";
-
-const TabIcon = ({
-  source,
-  focused,
-}: {
-  source: IconDefinition;
-  focused: boolean;
-}) => (
-  <View className={`${focused ? "mb-4 " : ""}`}>
-    <FontAwesomeIcon icon={source} size={30} color={"orange"} />
-  </View>
-);
+import {useTheme} from "react-native-paper";
+import TabIcon from "@/components/basic/TabIcon";
 
 export default function TabsLayout() {
+  const theme = useTheme();
+  /// TODO: Change bottom navigation
+  /// TODO: START DEVELOPING APPLICATION !!!!!!!
+
   return (
+    <>
     <Tabs
       initialRouteName="home"
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: "#1f2937", // Tailwind gray-800
+          backgroundColor: theme.colors.background, // Tailwind gray-800
           height: 60,
           borderTopWidth: 0,
         },
-        tabBarActiveTintColor: "#3b82f6", // Tailwind blue-500
-        tabBarInactiveTintColor: "#9ca3af", // Tailwind gray-400
+        tabBarActiveTintColor: theme.colors.primary, // Tailwind blue-500
+        tabBarInactiveTintColor: theme.colors.backdrop, // Tailwind gray-400
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: "600",
@@ -48,7 +43,7 @@ export default function TabsLayout() {
           title: "Home",
           headerShown: false,
           tabBarIcon: (focused) => (
-            <TabIcon source={faHouse} focused={focused.focused} />
+            <TabIcon source={"home"} focused={focused.focused} />
           ),
         }}
       />
@@ -58,7 +53,7 @@ export default function TabsLayout() {
           title: "Playground",
           headerShown: false,
           tabBarIcon: (focused) => (
-            <TabIcon source={faBasketball} focused={focused.focused} />
+            <TabIcon source={"basketball-hoop"} focused={focused.focused} />
           ),
         }}
       />
@@ -68,7 +63,7 @@ export default function TabsLayout() {
           title: "Lists",
           headerShown: false,
           tabBarIcon: (focused) => (
-            <TabIcon source={faShoppingBasket} focused={focused.focused} />
+            <TabIcon source={"cart"} focused={focused.focused} />
           ),
         }}
       />
@@ -78,7 +73,7 @@ export default function TabsLayout() {
           title: "Products",
           headerShown: false,
           tabBarIcon: (focused) => (
-            <TabIcon source={faProductHunt} focused={focused.focused} />
+            <TabIcon source={'food-apple'} focused={focused.focused} />
           ),
         }}
       />
@@ -88,10 +83,11 @@ export default function TabsLayout() {
           title: "Profile",
           headerShown: false,
           tabBarIcon: (focused) => (
-            <TabIcon source={faUser} focused={focused.focused} />
+            <TabIcon source={'account'} focused={focused.focused} />
           ),
         }}
       />
     </Tabs>
+    </>
   );
 }

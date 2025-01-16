@@ -3,7 +3,7 @@ import React, {useState} from "react";
 import CustomButton from "@/components/CustomButton";
 import {useClerk, useUser} from "@clerk/clerk-expo";
 import {router} from "expo-router";
-import PickUserModal from "@/components/PickUserModal";
+import PickUserModal from "@/components/auth/PickUserModal";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {Button, Text} from "react-native-paper";
 import {useDeleteAccountMutation} from "@/behavior/auth/authApi";

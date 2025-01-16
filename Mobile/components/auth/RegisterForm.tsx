@@ -1,5 +1,5 @@
 import { Alert, View } from "react-native";
-import InputField from "@/components/InputField";
+import InputField from "@/components/basic/InputField";
 import { Button, Dialog, Portal, Text, useTheme } from "react-native-paper";
 import React, { useState } from "react";
 import { useFormik } from "formik";

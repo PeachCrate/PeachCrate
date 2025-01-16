@@ -1,15 +1,10 @@
-import {SafeAreaView} from "react-native-safe-area-context";
-import {Alert, ScrollView, View} from "react-native";
-import React, {useCallback, useState} from "react";
-import InputField from "@/components/InputField";
-import {FontAwesomeIcon} from "@fortawesome/react-native-fontawesome";
-import {faAt, faLock, faPerson} from "@fortawesome/free-solid-svg-icons";
-import CustomButton from "@/components/CustomButton";
-import OAuth from "@/components/OAuth";
+import { ScrollView, View} from "react-native";
+import React from "react";
 import {Link, router} from "expo-router";
 import {useSignIn} from "@clerk/clerk-expo";
 import {Button, Icon, Text, TextInput, useTheme} from 'react-native-paper';
 import LoginForm from "@/components/auth/LoginForm";
+import OAuth from "@/components/auth/OAuth";
 
 const Login = () => {
   const theme = useTheme();

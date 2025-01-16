@@ -59,16 +59,8 @@ public class AuthRepository : IAuthRepository
             ClerkId = clerkId,
         };
 
-        await _userRepository.AddUserAsync(user);
-        Group userGroup = new()
-        {
-            IsUserGroup = true,
-            CreationDate = DateTime.UtcNow,
-            Title = user.Login,
-            Users = [user]
-        };
-        await _groupRepository.AddGroupAsync(userGroup);
-        return await GenerateTokens(user);
+        var createdUser = await _userRepository.AddUserAsync(user);
+        return await GenerateTokens(createdUser);
     }
 
     public async Task<JwtTokensResponse> OAuthSignInAsync(string login, string email, string clerkId)
@@ -84,17 +76,8 @@ public class AuthRepository : IAuthRepository
             RegistrationDate = DateTime.UtcNow,
             ClerkId = clerkId,
         };
-        await _userRepository.AddUserAsync(user);
-        
-        Group userGroup = new()
-        {
-            IsUserGroup = true,
-            CreationDate = DateTime.UtcNow,
-            Title = user.Login,
-            Users = [user]
-        };
-        await _groupRepository.AddGroupAsync(userGroup);
-        return await GenerateTokens(user);
+        var createdUser = await _userRepository.AddUserAsync(user);
+        return await GenerateTokens(createdUser);
     }
 
     public async Task<JwtTokensResponse> LoginAsync(string loginOrEmail, string password)
