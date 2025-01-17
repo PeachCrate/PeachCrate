@@ -65,7 +65,7 @@ namespace Presentation.Controllers
         {
             try
             {
-                var (accessJwtToken, refreshJwtToken) = await _authRepository.OAuthSignInAsync(prop.Login, prop.Email, prop.ClerkId);
+                var (accessJwtToken, refreshJwtToken) = await _authRepository.OAuthSignInAsync(prop.SessionId);
                 return Ok(new JwtTokensResponse(accessJwtToken, refreshJwtToken));
             }
             catch (AuthException exception)

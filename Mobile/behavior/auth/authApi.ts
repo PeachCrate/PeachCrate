@@ -1,4 +1,4 @@
-import {BaseQueryArg, createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react";
+import {createApi} from "@reduxjs/toolkit/query/react";
 import {
   RegisterRequest,
   Tokens,
@@ -58,5 +58,4 @@ export const {
   useLoginMutation,
   useDeleteAccountMutation,
   useOAuthSignInMutation,
-} =
-  authApi;
+} = authApi;

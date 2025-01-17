@@ -58,22 +58,12 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="shoppingLists"
+        name="categoriesList"
         options={{
-          title: "Lists",
+          title: "Categories",
           headerShown: false,
           tabBarIcon: (focused) => (
-            <TabIcon source={"cart"} focused={focused.focused} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="products"
-        options={{
-          title: "Products",
-          headerShown: false,
-          tabBarIcon: (focused) => (
-            <TabIcon source={'food-apple'} focused={focused.focused} />
+            <TabIcon source={'rectangle'} focused={focused.focused} />
           ),
         }}
       />

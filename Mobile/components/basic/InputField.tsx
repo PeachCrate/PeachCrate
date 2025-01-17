@@ -1,4 +1,5 @@
 import {
+  KeyboardAvoidingView, Platform,
   TextInputProps,
 } from "react-native";
 import React from "react";
@@ -21,17 +22,21 @@ const InputField = ({
   const theme = useTheme();
   return (
     <>
-      <TextInput
-        theme={{roundness: 10}}
-        label={label}
-        placeholder={props.placeholder}
-        mode='flat'
-        textContentType='nickname'
-        value={props.value}
-        onChangeText={props.onChangeText}
-        left={iconName && <TextInput.Icon icon={iconName}/>}
-        secureTextEntry={secureTextEntry}
-      />
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <TextInput
+          theme={{roundness: 10}}
+          label={label}
+          placeholder={props.placeholder}
+          mode='flat'
+          textContentType='nickname'
+          value={props.value}
+          onChangeText={props.onChangeText}
+          left={iconName && <TextInput.Icon icon={iconName}/>}
+          secureTextEntry={secureTextEntry}
+        />
+      </KeyboardAvoidingView>
       {error && (
         <HelperText type='error'>{error}</HelperText>
       )}

@@ -63,18 +63,32 @@ public class AuthRepository : IAuthRepository
         return await GenerateTokens(createdUser);
     }
 
-    public async Task<JwtTokensResponse> OAuthSignInAsync(string login, string email, string clerkId)
+    record ClerkSessionResponse(string user_id, string client_id);
+    public record EmailAddress(string email_address);
+    public record ClerkUserResponse(string username, string first_name, string last_name, string profile_image_url, string image_url, bool has_image, List<EmailAddress> email_addresses);
+    public async Task<JwtTokensResponse> OAuthSignInAsync(string sessionId)
     {
-        var existingUser = await _dataContext.Users.FirstOrDefaultAsync(user => user.ClerkId == clerkId);
+        using var httpClient = new HttpClient();
+        var secretKey = Environment.GetEnvironmentVariable("CLERK_SECRET_KEY");
+        if (secretKey is null)
+            throw new Exception("CLERK_SECRET_KEY not found.");
+        httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + secretKey);
+        httpClient.BaseAddress = new Uri("https://api.clerk.com/");
+        var sessionResponse = await httpClient.GetFromJsonAsync<ClerkSessionResponse>($"v1/sessions/{sessionId}");
+        
+        var existingUser = await _dataContext.Users.FirstOrDefaultAsync(user => user.ClerkId == sessionResponse.user_id);
         if (existingUser is not null)
             return await GenerateTokens(existingUser);
+
+        var userResponse = await httpClient.GetFromJsonAsync<ClerkUserResponse>($"v1/users/{sessionResponse.user_id}");
+        
         
         User user = new()
         {
-            Login = login,
-            Email = email,
+            Login = userResponse.first_name + " " + userResponse.last_name,
+            Email = userResponse.email_addresses.FirstOrDefault().email_address,
             RegistrationDate = DateTime.UtcNow,
-            ClerkId = clerkId,
+            ClerkId = sessionResponse.user_id,
         };
         var createdUser = await _userRepository.AddUserAsync(user);
         return await GenerateTokens(createdUser);
@@ -160,7 +174,6 @@ public class AuthRepository : IAuthRepository
         var clerkId = GetClerkId(user);
         
         using var httpClient = new HttpClient();
-
         var secretKey = Environment.GetEnvironmentVariable("CLERK_SECRET_KEY");
         if (secretKey is null)
             throw new Exception("CLERK_SECRET_KEY not found.");
@@ -172,6 +185,7 @@ public class AuthRepository : IAuthRepository
         await _userRepository.DeleteUserAsync(user!);
         return true;
     }
+    
 
     public async Task<bool> IsCredentialTaken(string login, string email)
     {

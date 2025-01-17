@@ -11,9 +11,7 @@ export interface LoginRequest {
 }
 
 export interface OAuthSignInRequest {
-  login: string;
-  email: string;
-  clerkId: string;
+  sessionId: string;
 }
 
 export interface Tokens {

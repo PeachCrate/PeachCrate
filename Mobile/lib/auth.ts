@@ -35,7 +35,7 @@ export const tokenCache = createTokenCache();
 
 export const googleOAuth = async (startOAuthFlow: (startOAuthFlowParams?: StartOAuthFlowParams) => Promise<StartOAuthFlowReturnType>, dispatch: AppDispatch) => {
   try {
-    const {createdSessionId, setActive, signUp} = await startOAuthFlow({
+    const {createdSessionId, setActive, signUp, authSessionResult} = await startOAuthFlow({
       redirectUrl: Linking.createURL("/(root)/(tabs)/home"),
     });
 
@@ -43,20 +43,16 @@ export const googleOAuth = async (startOAuthFlow: (startOAuthFlowParams?: StartO
       if (setActive) {
         await setActive({session: createdSessionId});
 
-        if (signUp.createdUserId) {
-          const request: OAuthSignInRequest = {
-            login: signUp.firstName + ' ' + signUp.lastName,
-            email: signUp.emailAddress!,
-            clerkId: signUp.createdUserId,
-          };
-          console.log('req', request);
-          const response = await dispatch(
-            authApi.endpoints.oAuthSignIn.initiate(request)
-          ).unwrap();
-          
-          dispatch(setTokens(response));
-        }
-
+        const request: OAuthSignInRequest = {
+          sessionId: createdSessionId
+        };
+        console.log('req', request);
+        const response = await dispatch(
+          authApi.endpoints.oAuthSignIn.initiate(request)
+        ).unwrap();
+        console.log('res', response);
+        dispatch(setTokens(response));
+        
         return {
           success: true,
           code: "success",
