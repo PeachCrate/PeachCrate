@@ -8,7 +8,7 @@ import {Button, Text} from "react-native-paper";
 import {useDeleteAccountMutation} from "@/behavior/auth/authApi";
 import {useToast} from "react-native-paper-toast";
 import {useAppDispatch} from "@/behavior/hooks";
-import {clearTokens} from "@/behavior/auth/authSlice";
+import {clearTokens, setSessionId} from "@/behavior/auth/authSlice";
 
 const Profile = () => {
   const toast = useToast();
@@ -25,6 +25,7 @@ const Profile = () => {
   async function handleSignOut() {
     await signOut({sessionId: session?.id});
     dispatch(clearTokens());
+    dispatch(setSessionId(''));
     if (client.activeSessions[0]) {
       await setActive({session: client.activeSessions[0]});
       router.replace("/(root)/(tabs)/home");
@@ -42,6 +43,7 @@ const Profile = () => {
     if (!res)
       return;
     await signOut({sessionId: session?.id});
+    dispatch(setSessionId(''));
     if (client.activeSessions[0]) {
       await setActive({session: client.activeSessions[0]});
       dispatch(clearTokens());
