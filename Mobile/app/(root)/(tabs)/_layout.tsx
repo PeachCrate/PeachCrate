@@ -2,9 +2,12 @@ import { router, Tabs } from "expo-router";
 import React, { useState } from "react";
 import {useTheme} from "react-native-paper";
 import TabIcon from "@/components/basic/TabIcon";
+import {useAppDispatch} from "@/behavior/hooks";
+import {setRunningGame} from "@/behavior/game/gameSlice";
 
 export default function TabsLayout() {
   const theme = useTheme();
+  const dispatch = useAppDispatch();
   return (
     <>
     <Tabs
@@ -22,6 +25,17 @@ export default function TabsLayout() {
           fontSize: 12,
           fontWeight: "600",
         },
+      }}
+      screenListeners={
+      {tabPress: (e) => {
+          const parts = e?.target?.split("-");
+          if (!parts)
+            return;
+          const result = parts[0];
+          if (result !== 'playground') {
+            dispatch(setRunningGame(false));
+          }
+        }
       }}
     >
       <Tabs.Screen
