@@ -1,15 +1,12 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-import {Platform, Text, View} from 'react-native';
-import {SafeAreaView} from "react-native-safe-area-context";
+import React from "react";
 
+import {Stack } from "expo-router";
 
 export default function RootLayout() {
-  
-
   return (
-    <SafeAreaView>
-      <Text>RootLayout</Text>
-    </SafeAreaView>
+    <Stack>
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="category/[id]" options={{ headerShown: false }} />
+    </Stack>
   );
 }

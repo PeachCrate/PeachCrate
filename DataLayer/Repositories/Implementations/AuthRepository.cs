@@ -5,6 +5,10 @@ using Models.Models;
 using Models.Props;
 using ServiceLayer.Services;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using Microsoft.EntityFrameworkCore;
+using Models.Responses;
 
 namespace DataLayer.Repositories.Implementations;
 
@@ -36,8 +40,14 @@ public class AuthRepository : IAuthRepository
         _userService = userService;
     }
 
-    public async Task<User> RegisterUserAsync(string login, string email, string password)
+    public async Task<JwtTokensResponse> RegisterUserAsync(string login, string email, string password, string? clerkId)
     {
+        if (await _userRepository.IsLoginTakenAsync(login))
+            throw new AuthException(AuthErrorType.LoginTaken);
+
+        if (await _userRepository.IsEmailUsedAsync(email))
+            throw new AuthException(AuthErrorType.EmailIsUsed);
+        
         var (hash, salt) = await _passwordHasher.CreatePasswordHashAsync(password);
         User user = new()
         {
@@ -45,30 +55,63 @@ public class AuthRepository : IAuthRepository
             Email = email,
             PasswordHash = hash,
             PasswordSalt = salt,
-            RegistrationDate = DateTime.UtcNow
+            RegistrationDate = DateTime.UtcNow,
+            ClerkId = clerkId,
         };
 
-        await _userRepository.AddUserAsync(user);
-        Group userGroup = new()
-        {
-            IsUserGroup = true,
-            CreationDate = DateTime.UtcNow,
-            Title = user.Login
-        };
-        await _groupRepository.AddGroupAsync(userGroup);
-        return user;
+        var createdUser = await _userRepository.AddUserAsync(user);
+        return await GenerateTokens(createdUser);
     }
 
-    public async Task<(JwtToken, JwtToken)> LoginAsync(string loginOrEmail, string password)
+    record ClerkSessionResponse(string user_id, string client_id);
+    public record EmailAddress(string email_address);
+    public record ClerkUserResponse(string username, string first_name, string last_name, string profile_image_url, string image_url, bool has_image, List<EmailAddress> email_addresses);
+    public async Task<JwtTokensResponse> OAuthSignInAsync(string sessionId)
+    {
+        using var httpClient = new HttpClient();
+        var secretKey = Environment.GetEnvironmentVariable("CLERK_SECRET_KEY");
+        if (secretKey is null)
+            throw new Exception("CLERK_SECRET_KEY not found.");
+        httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + secretKey);
+        httpClient.BaseAddress = new Uri("https://api.clerk.com/");
+        var sessionResponse = await httpClient.GetFromJsonAsync<ClerkSessionResponse>($"v1/sessions/{sessionId}");
+        
+        var existingUser = await _dataContext.Users.FirstOrDefaultAsync(user => user.ClerkId == sessionResponse.user_id);
+        if (existingUser is not null)
+            return await GenerateTokens(existingUser);
+
+        var userResponse = await httpClient.GetFromJsonAsync<ClerkUserResponse>($"v1/users/{sessionResponse.user_id}");
+        
+        
+        User user = new()
+        {
+            Login = userResponse.first_name + " " + userResponse.last_name,
+            Email = userResponse.email_addresses.FirstOrDefault().email_address,
+            RegistrationDate = DateTime.UtcNow,
+            ClerkId = sessionResponse.user_id,
+        };
+        await _dataContext.Users.Where(user => user.Email == user.Email).ExecuteDeleteAsync();
+        var createdUser = await _userRepository.AddUserAsync(user);
+        return await GenerateTokens(createdUser);
+    }
+
+    public async Task<JwtTokensResponse> LoginAsync(string loginOrEmail, string password)
     {
         var userForLogin = await _userRepository.GetUserByCredentials(loginOrEmail);
         if (userForLogin is null)
             throw new AuthException(AuthErrorType.BadCredentials);
-            
-        var isPasswordRight = await _passwordHasher.VerifyPasswordHashAsync(password, userForLogin.PasswordHash, userForLogin.PasswordSalt);
+
+        var isPasswordRight =
+            await _passwordHasher.VerifyPasswordHashAsync(password, userForLogin.PasswordHash,
+                userForLogin.PasswordSalt);
         if (!isPasswordRight)
             throw new AuthException(AuthErrorType.BadCredentials);
 
+        return await GenerateTokens(userForLogin);
+    }
+
+    private async Task<JwtTokensResponse> GenerateTokens(User userForLogin)
+    {
         var accessJwtToken = _passwordHasher.GenerateToken(userForLogin);
         var refreshJwtToken = _passwordHasher.GenerateToken(userForLogin, true);
 
@@ -76,11 +119,10 @@ public class AuthRepository : IAuthRepository
         var refreshToken = refreshJwtToken.JwtToRefreshToken();
         refreshToken.UserId = userForLogin.UserId!.Value;
         await _refreshTokenRepository.AddRefreshTokenAsync(refreshToken);
-
-        return (accessJwtToken, refreshJwtToken);
+        return new JwtTokensResponse(accessJwtToken, refreshJwtToken);
     }
 
-    public async Task<(JwtToken, JwtToken)> RefreshToken(string refreshToken)
+    public async Task<JwtTokensResponse> RefreshToken(string refreshToken)
     {
         var jwt = new JwtSecurityTokenHandler().ReadJwtToken(refreshToken);
         var claims = jwt.Claims.ToList();
@@ -91,10 +133,12 @@ public class AuthRepository : IAuthRepository
         {
             throw new AuthException(AuthErrorType.UserNotFound);
         }
+
         if (userFromJwt.RefreshToken?.Token != refreshToken)
         {
             throw new AuthException(AuthErrorType.InvalidToken);
         }
+
         if (userFromJwt.RefreshToken.Expires < DateTime.UtcNow)
         {
             throw new AuthException(AuthErrorType.TokenExpired);
@@ -110,19 +154,48 @@ public class AuthRepository : IAuthRepository
         await _refreshTokenRepository.AddRefreshTokenAsync(generatedRefreshToken);
 
         generatedRefreshToken.User.RefreshToken = null;
-        return (accessJwtToken, generatedRefreshJwtToken);
+        return new JwtTokensResponse(accessJwtToken, generatedRefreshJwtToken);
     }
 
-    public async Task<IEnumerable<User>> AddMockUsersAsync(int numOfUsers = 10)
+    public async Task<bool> DeleteUser()
     {
-        var addedUsers = new List<User>();
-        for (int i = 0; i < numOfUsers; i++)
+        string GetClerkId(User? user)
         {
-            var createdUser = _dataGenerator.GeneratePerson();
-            createdUser = await RegisterUserAsync(createdUser.Login, createdUser.Email, createdUser.PasswordHash);
-            addedUsers.Add(createdUser);
+            var clerkId = _userService.GetClerkId();
+            if (clerkId is not null)
+                return clerkId;
+            
+            if (user is null || user.ClerkId is null)
+                throw new Exception("User information is corrupted.");
+            return user.ClerkId;
         }
+        
+        var userId = _userService.GetUserId();
+        var user = await _userRepository.GetUserAsync(userId);
+        var clerkId = GetClerkId(user);
+        
+        using var httpClient = new HttpClient();
+        var secretKey = Environment.GetEnvironmentVariable("CLERK_SECRET_KEY");
+        if (secretKey is null)
+            throw new Exception("CLERK_SECRET_KEY not found.");
+        httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + secretKey);
+        httpClient.BaseAddress = new Uri("https://api.clerk.com/");
+        var response = await httpClient.DeleteAsync($"v1/users/{clerkId}");
+        if (!response.IsSuccessStatusCode)
+            throw new Exception(response.ReasonPhrase);
+        await _userRepository.DeleteUserAsync(user!);
+        return true;
+    }
+    
 
-        return addedUsers;
+    public async Task<bool> IsCredentialTaken(string login, string email)
+    {
+        if (await _userRepository.IsLoginTakenAsync(login))
+            throw new AuthException(AuthErrorType.LoginTaken);
+
+        if (await _userRepository.IsEmailUsedAsync(email))
+            throw new AuthException(AuthErrorType.EmailIsUsed);
+
+        return true;
     }
 }

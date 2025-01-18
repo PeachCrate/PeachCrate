@@ -17,4 +17,6 @@ public interface IProductBaseRepository
     Task RemoveCategoryFromProductBase(ProductBaseCategoryProp prop);
     Task UpdateProductBaseAsync(ProductBase productBase);
     Task UpdateProductBaseAsync(ProductBase productBase, int groupId);
+    Task AddSeedBaseProducts();
+
 }

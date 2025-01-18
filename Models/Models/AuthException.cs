@@ -23,6 +23,8 @@ public class AuthException : Exception
             AuthErrorType.InvalidUserIdInJwtClaims => "User ID in JWT is invalid.",
             AuthErrorType.UserNotFound => "User not found.",
             AuthErrorType.BadCredentials => "Bad credentials.",
+            AuthErrorType.LoginTaken => "This login is taken.",
+            AuthErrorType.EmailIsUsed => "This email is in use.",
             _ => ""
         };
     }
@@ -34,5 +36,7 @@ public enum AuthErrorType
     InvalidToken,
     TokenExpired,
     UserNotFound,
-    BadCredentials
+    BadCredentials,
+    LoginTaken,
+    EmailIsUsed,
 }

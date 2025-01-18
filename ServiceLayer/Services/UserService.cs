@@ -23,6 +23,11 @@ public class UserService
         var userIdClaim = GetClaim("UserId");
         return Convert.ToInt32(userIdClaim?.Value);
     }
+    
+    public string? GetClerkId()
+    {
+        return GetClaim("ClerkId")?.Value;
+    }
 
     public string? GetUserRole()
     {

@@ -1,15 +1,70 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-import {Platform, Text, View} from 'react-native';
-import {SafeAreaView} from "react-native-safe-area-context";
-
+import { router, Tabs } from "expo-router";
+import React, { useState } from "react";
+import {useTheme} from "react-native-paper";
+import TabIcon from "@/components/basic/TabIcon";
 
 export default function TabsLayout() {
-  
-
+  const theme = useTheme();
   return (
-    <SafeAreaView>
-      <Text>Tabs</Text>
-    </SafeAreaView>
+    <>
+    <Tabs
+      initialRouteName="home"
+      screenOptions={{
+        headerShown: false,
+        tabBarStyle: {
+          backgroundColor: theme.colors.background, // Tailwind gray-800
+          height: 60,
+          borderTopWidth: 0,
+        },
+        tabBarActiveTintColor: theme.colors.primary, // Tailwind blue-500
+        tabBarInactiveTintColor: theme.colors.backdrop, // Tailwind gray-400
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: "600",
+        },
+      }}
+    >
+      <Tabs.Screen
+        name="home"
+        options={{
+          title: "Home",
+          headerShown: false,
+          tabBarIcon: (focused) => (
+            <TabIcon source={"home"} focused={focused.focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="playground"
+        options={{
+          title: "Playground",
+          headerShown: false,
+          tabBarIcon: (focused) => (
+            <TabIcon source={"basketball-hoop"} focused={focused.focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="categoriesList"
+        options={{
+          title: "Categories",
+          headerShown: false,
+          tabBarIcon: (focused) => (
+            <TabIcon source={'rectangle'} focused={focused.focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profile",
+          headerShown: false,
+          tabBarIcon: (focused) => (
+            <TabIcon source={'account'} focused={focused.focused} />
+          ),
+        }}
+      />
+    </Tabs>
+    </>
   );
 }

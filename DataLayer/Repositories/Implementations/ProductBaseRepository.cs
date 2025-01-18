@@ -215,7 +215,6 @@ public class ProductBaseRepository : IProductBaseRepository
         await DeleteProductBaseAsync(productBaseId);
     }
 
-
     public async Task AddCategoryToProductBase(ProductBaseCategoryProp prop)
     {
         var productBase = await _dataContext.ProductBases
@@ -247,6 +246,114 @@ public class ProductBaseRepository : IProductBaseRepository
             return;
 
         productBase.Categories.Remove(category);
+        await _dataContext.SaveChangesAsync();
+    }
+
+    public async Task AddSeedBaseProducts()
+    {
+        // Seed Categories
+        var categories = new List<Category>
+        {
+            new() { Title = "Electronics", Description = "Devices and gadgets" },
+            new() { Title = "Clothing", Description = "Apparel and accessories" },
+            new() { Title = "Home Appliances", Description = "Appliances for household use" },
+            new() { Title = "Books", Description = "Printed and digital books" },
+            new() { Title = "Toys", Description = "Toys and games for children" },
+            new() { Title = "Groceries", Description = "Food items and daily essentials" },
+            new() { Title = "Personal Care", Description = "Hygiene and beauty products" },
+            new() { Title = "Cleaning Supplies", Description = "Household cleaning products" },
+            new() { Title = "Eco-Friendly", Description = "Sustainable and environmentally friendly products" }
+        };
+
+        await _dataContext.Categories.AddRangeAsync(categories);
+        await _dataContext.SaveChangesAsync();
+
+        // Seed ProductBases
+        var productBases = new List<ProductBase>
+        {
+            new()
+            {
+                Name = "Smartphone",
+                Description = "Latest model smartphone with high resolution camera",
+                Weight = 0.2,
+                RunningOutQuantity = 10,
+                Categories = new List<Category> { categories[0] }
+            },
+            new()
+            {
+                Name = "T-shirt",
+                Description = "Cotton T-shirt available in various colors",
+                Weight = 0.3,
+                RunningOutQuantity = 50,
+                Categories = new List<Category> { categories[1] }
+            },
+            new()
+            {
+                Name = "Microwave Oven",
+                Description = "Compact microwave oven for quick heating",
+                Weight = 12.0,
+                RunningOutQuantity = 5,
+                Categories = new List<Category> { categories[2] }
+            },
+            new()
+            {
+                Name = "Fiction Novel",
+                Description = "Best-selling fiction novel",
+                Weight = 0.5,
+                RunningOutQuantity = 20,
+                Categories = new List<Category> { categories[3] }
+            },
+            new()
+            {
+                Name = "Lego Set",
+                Description = "Creative building blocks for kids",
+                Weight = 2.0,
+                RunningOutQuantity = 15,
+                Categories = new List<Category> { categories[4] }
+            },
+            new()
+            {
+                Name = "Milk",
+                Description = "Fresh organic milk",
+                Weight = 1.0,
+                RunningOutQuantity = 30,
+                Categories = new List<Category> { categories[5], categories[8] }
+            },
+            new()
+            {
+                Name = "Shampoo",
+                Description = "Herbal shampoo for daily use",
+                Weight = 0.5,
+                RunningOutQuantity = 20,
+                Categories = new List<Category> { categories[6], categories[8] }
+            },
+            new()
+            {
+                Name = "Dish Soap",
+                Description = "Eco-friendly dishwashing liquid",
+                Weight = 0.8,
+                RunningOutQuantity = 15,
+                Categories = new List<Category> { categories[7], categories[8] }
+            },
+            new()
+            {
+                Name = "Bread",
+                Description = "Whole grain bread",
+                Weight = 0.5,
+                RunningOutQuantity = 25,
+                Categories = new List<Category> { categories[5] }
+            },
+            new()
+            {
+                Name = "Reusable Grocery Bag",
+                Description = "Durable and eco-friendly shopping bag",
+                Weight = 0.2,
+                RunningOutQuantity = 50,
+                Categories = new List<Category> { categories[8] }
+            }
+        };
+
+        await _dataContext.ProductBases.AddRangeAsync(productBases);
         await _dataContext.SaveChangesAsync();
     }
 }

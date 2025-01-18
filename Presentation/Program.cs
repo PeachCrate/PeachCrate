@@ -18,15 +18,16 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-
+        builder.Logging.AddConsole();
         builder.Services.AddControllers().AddJsonOptions(options =>
         {
             options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-        }); ;
+        });
+        
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddHttpContextAccessor();
-
+        
 
         builder.Services.AddSwaggerGen(options =>
         {
@@ -65,14 +66,24 @@ public class Program
 
         builder.Services.AddTransient<UserService>();
 
-        builder.Services.AddDbContext<DataContext>(options =>
-        {
-            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
-                b => b.MigrationsAssembly("Presentation"));
-        });
+        // builder.Services.AddDbContext<DataContext>(options =>
+        // {
+        //     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
+        //         b => b.MigrationsAssembly("Presentation"));
+        // });
+
+        builder.Services.AddDbContext<DataContext>(
+            options =>
+            {
+                var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+                options.UseSqlServer(connectionString);
+                options.EnableSensitiveDataLogging();
+            });
+
         #endregion
 
         #region Auth settiongs
+
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
@@ -82,14 +93,17 @@ public class Program
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8
                         .GetBytes(builder.Configuration.GetSection("JWT:Token").Value)),
                     ValidateIssuer = false,
-                    ValidateAudience = false
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero,
+                    // LifetimeValidator = ((before, expires, token, parameters) =>
+                    // {
+                    //     return DateTime.UtcNow > expires;
+                    // })
                 };
             });
         builder.Services.AddCors(options => options.AddPolicy(name: "NgOrigins",
-            policy =>
-            {
-                policy.WithOrigins("http://localhost:4200").AllowAnyMethod().AllowAnyHeader();
-            }));
+            policy => { policy.WithOrigins("http://localhost:4200").AllowAnyMethod().AllowAnyHeader(); }));
 
         #endregion
 
@@ -108,6 +122,17 @@ public class Program
         app.UseAuthorization();
 
         app.MapControllers();
+        using (var scope = app.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<DataContext>();
+            var isCreated = db.Database.EnsureCreated();
+            app.Logger.Log(LogLevel.Debug, isCreated ? "Database was created" : "");
+            if (isCreated)
+            {
+                var productRepo = scope.ServiceProvider.GetRequiredService<IProductBaseRepository>();
+                productRepo.AddSeedBaseProducts().Wait();
+            }
+        }
 
         app.Run();
     }

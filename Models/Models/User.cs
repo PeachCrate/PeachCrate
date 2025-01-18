@@ -5,13 +5,14 @@ namespace Models.Models;
 public class User
 {
     public int? UserId { get; set; }
+    public string? ClerkId { get; set; }
     [MaxLength(20)]
     [MinLength(5)]
     public string Login { get; set; }
     [DoNotExport]
-    public string PasswordHash { get; set; }
+    public string? PasswordHash { get; set; }
     [DoNotExport]
-    public string PasswordSalt { get; set; }
+    public string? PasswordSalt { get; set; }
     [Phone]
     public string? PhoneNumber { get; set; }
     [EmailAddress]

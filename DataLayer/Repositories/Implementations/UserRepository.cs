@@ -93,10 +93,28 @@ public class UserRepository : IUserRepository
         if (await IsLoginTakenAsync(user.Login))
             return null;
 
-        user.UserId = null;
-        _dataContext.Users.Add(user);
+        var existingUser = await GetUserByCredentials(user.Email);
+        if (existingUser is null)
+        {
+            user.UserId = null;
+            _dataContext.Users.Add(user);
+            await _dataContext.SaveChangesAsync();
+            Group userGroup = new()
+            {
+                IsUserGroup = true,
+                CreationDate = DateTime.UtcNow,
+                Title = user.Login,
+                Users = [user]
+            };
+            _dataContext.Groups.Add(userGroup);
+            await _dataContext.SaveChangesAsync();
+            return user;
+        }
+
+        existingUser = user;
+        _dataContext.Entry(existingUser).State = EntityState.Modified;
         await _dataContext.SaveChangesAsync();
-        return user;
+        return existingUser;
     }
     
     public async Task DeleteUserAsync(User user)
@@ -143,5 +161,10 @@ public class UserRepository : IUserRepository
     public async Task<bool> IsLoginTakenAsync(string login)
     {
         return await _dataContext.Users.AnyAsync(u => u.Login == login);
+    }
+    
+    public async Task<bool> IsEmailUsedAsync(string email)
+    {
+        return await _dataContext.Users.AnyAsync(u => u.Email == email);
     }
 }

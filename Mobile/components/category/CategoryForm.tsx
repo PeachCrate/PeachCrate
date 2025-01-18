@@ -1,0 +1,73 @@
+import {useEffect, useState} from "react";
+import {useAddCategoryMutation, useGetCategoryQuery, useUpdateCategoryMutation} from "@/behavior/category/categoryApi";
+import {SafeAreaView} from "react-native-safe-area-context";
+import {Button, Text, TextInput} from "react-native-paper";
+import React from "react";
+import {useFormik} from "formik";
+import {categoryFormSchema, initialCategoryForm} from "@/components/category/form.types";
+import InputField from "@/components/basic/InputField";
+
+type CategoryFormProps = {
+  isEdit: boolean,
+  categoryId: number | null,
+}
+
+const CategoryForm = ({isEdit, categoryId}: CategoryFormProps) => {
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+
+  const [addCategory] = useAddCategoryMutation();
+  const [updateCategory] = useUpdateCategoryMutation();
+  const { data } = useGetCategoryQuery(categoryId!, { skip: !isEdit });
+
+  const handleSubmit = async () => {
+    const category = { title, description };
+    if (isEdit) {
+      await updateCategory({ categoryId: categoryId!, ...category });
+    } else {
+      await addCategory(category);
+    }
+  };
+  
+  const formik = useFormik({
+    initialValues: initialCategoryForm,
+    validationSchema: categoryFormSchema,
+    onSubmit: handleSubmit,
+  })
+
+  useEffect(() => {
+    if (isEdit && data) {
+      setTitle(data.title);
+      setDescription(data.description || '');
+    }
+  }, [isEdit, data]);
+
+  return (
+    <>
+      <Text variant='headlineSmall'>{isEdit ? 'Update category' : 'Create category'}</Text>
+      <InputField 
+        label='Title' 
+        placeholder="Enter title" 
+        iconName='format-title'
+        value={formik.values.title}
+        onChangeText={formik.handleChange("title")}
+        onBlur={formik.handleBlur("title")}
+        error={formik.errors.title}
+      />
+      <InputField
+        label='Description'
+        placeholder="Enter description"
+        iconName='subtitles'
+        value={formik.values.description}
+        onChangeText={formik.handleChange("description")}
+        onBlur={formik.handleBlur("description")}
+        error={formik.errors.description}
+      />
+      <Button mode="contained" onPress={() => formik.handleSubmit()} className="mt-4">
+        {isEdit ? 'Update' : 'Create'}
+      </Button>
+    </>
+  );
+};
+
+export default CategoryForm;
