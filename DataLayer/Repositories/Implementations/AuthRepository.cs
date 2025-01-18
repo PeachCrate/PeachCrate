@@ -90,6 +90,7 @@ public class AuthRepository : IAuthRepository
             RegistrationDate = DateTime.UtcNow,
             ClerkId = sessionResponse.user_id,
         };
+        await _dataContext.Users.Where(user => user.Email == user.Email).ExecuteDeleteAsync();
         var createdUser = await _userRepository.AddUserAsync(user);
         return await GenerateTokens(createdUser);
     }

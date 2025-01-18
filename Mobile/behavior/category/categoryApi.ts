@@ -1,11 +1,11 @@
-import {baseQuery} from "@/behavior/baseQuery";
+import {baseQuery, baseQueryWithReauth} from "@/behavior/baseQuery";
 import { createApi } from "@reduxjs/toolkit/query/react";
 import {Category, CategoryQueryParams} from "@/behavior/category/types";
 import {HelloResp} from "@/behavior/auth/types";
 
 export const categoryApi = createApi({
   reducerPath: 'categoryApi',
-  baseQuery: baseQuery,
+  baseQuery: baseQueryWithReauth,
   tagTypes: ['Category'],
   endpoints: (builder) => ({
     getCategories: builder.query<Category[], CategoryQueryParams>({

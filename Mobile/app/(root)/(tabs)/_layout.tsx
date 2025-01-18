@@ -1,23 +1,10 @@
 import { router, Tabs } from "expo-router";
 import React, { useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import {
-  faBasketball,
-  faHouse,
-  faShoppingBasket,
-  faUser,
-} from "@fortawesome/free-solid-svg-icons";
-import { View } from "react-native";
-import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import { faProductHunt } from "@fortawesome/free-brands-svg-icons";
 import {useTheme} from "react-native-paper";
 import TabIcon from "@/components/basic/TabIcon";
 
 export default function TabsLayout() {
   const theme = useTheme();
-  /// TODO: Change bottom navigation
-  /// TODO: START DEVELOPING APPLICATION !!!!!!!
-
   return (
     <>
     <Tabs

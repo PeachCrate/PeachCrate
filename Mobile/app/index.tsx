@@ -2,7 +2,7 @@ import { Redirect } from "expo-router";
 import { useAuth, useClerk } from "@clerk/clerk-expo";
 import React, { useEffect } from "react";
 import { useAppDispatch } from "@/behavior/hooks";
-import { setClientId } from "@/behavior/auth/authSlice";
+import {setClientId, setSessionId} from "@/behavior/auth/authSlice";
 
 const Home = () => {
   const dispatch = useAppDispatch();
@@ -11,6 +11,7 @@ const Home = () => {
   useEffect(() => {
     if (!session) return;
     dispatch(setClientId(session.user.id!));
+    dispatch(setSessionId(session.id));
   }, [session?.user.id]);
 
   if (session?.status) {

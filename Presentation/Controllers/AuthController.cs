@@ -74,14 +74,15 @@ namespace Presentation.Controllers
             }
         }
 
+        public record RefreshTokenProp(string refreshToken);
         // POST api/<AuthContoller>
         [HttpPost("refreshToken")]
         [Authorize]
-        public async Task<ActionResult<JwtTokensResponse>> RefreshToken([FromBody] string refreshToken)
+        public async Task<ActionResult<JwtTokensResponse>> RefreshToken(RefreshTokenProp prop)
         {
             try
             {
-                var (accessToken, newRefreshJwtToken) = await _authRepository.RefreshToken(refreshToken);
+                var (accessToken, newRefreshJwtToken) = await _authRepository.RefreshToken(prop.refreshToken);
                 return Ok(new JwtTokensResponse(accessToken, newRefreshJwtToken));
             }
             catch (AuthException exception)
@@ -90,17 +91,16 @@ namespace Presentation.Controllers
             }
         }
 
-        public record IsTakenResponse(bool isCredentialTaken);
 
         [HttpPost("IsCredentialTaken")]
-        public async Task<ActionResult<IsTakenResponse>> IsTaken([FromQuery] string? login, [FromQuery] string? email)
+        public async Task<ActionResult<bool>> IsTaken([FromQuery] string? login, [FromQuery] string? email)
         {
             if (string.IsNullOrEmpty(login) || string.IsNullOrEmpty(email))
-                return Ok(new IsTakenResponse(false));
+                return Ok(false);
             try
             {
                 var isTaken = await _authRepository.IsCredentialTaken(login, email);
-                return Ok(new IsTakenResponse(isTaken));
+                return Ok(isTaken);
             }
             catch (AuthException exception)
             {

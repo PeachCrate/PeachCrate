@@ -4,6 +4,8 @@ import React from "react";
 import {useClerk, useUser} from "@clerk/clerk-expo";
 import {useToast} from "react-native-paper-toast";
 import {Button, Dialog, Portal, RadioButton, Text} from "react-native-paper";
+import {useAppDispatch} from "@/behavior/hooks";
+import {setSessionId} from "@/behavior/auth/authSlice";
 
 type PickUserModalProps = {
   showModal: boolean;
@@ -14,6 +16,7 @@ const PickUserModal = ({showModal, setShowModal, checkSingleUser = true}: PickUs
   const toast = useToast();
   const {client, setActive} = useClerk();
   const {user} = useUser();
+  const dispatch = useAppDispatch();
 
   const hideModal = () => {
     setShowModal(false);
@@ -23,6 +26,7 @@ const PickUserModal = ({showModal, setShowModal, checkSingleUser = true}: PickUs
     if (userId === user?.id && client.activeSessions.length > 2) return;
     const session = client.sessions.find((s) => s?.user?.id === userId);
     setActive({session: session?.id}).catch((err: any) => console.error(err));
+    dispatch(setSessionId(session?.id!));
     hideModal();
     router.replace("/(root)/(tabs)/home");
   }

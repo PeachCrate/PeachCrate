@@ -13,14 +13,19 @@ const CategoryListScreen = () => {
   const [pageStart, setPageStart] = useState(0);
   const router = useRouter();
 
-  const {data, isLoading, refetch} = useGetCategoriesQuery({
+  const {data, isLoading, refetch, error} = useGetCategoriesQuery({
     filterValue: search,
     orderBy,
     pageNum,
     pageStart,
-  });
-
+  }, {refetchOnMountOrArgChange: true});
+  if (error)
+    console.log('ERROR', error);
   const [deleteCategory] = useDeleteCategoryMutation();
+
+  useEffect(() => {
+    refetch()
+  }, []);
 
   const handleDelete = async (id: number) => {
     await deleteCategory(id);
@@ -37,12 +42,11 @@ const CategoryListScreen = () => {
     refetch();
   };
   
-  const reload = () => {
-    refetch();
-  }
+  
 
   return (
     <SafeAreaView className="flex-1 p-4 ">
+      <Button onPress={refetch}>Reload</Button>
       <Button mode='contained' onPress={handleCreate}>Create category</Button>
       <TextInput
         label="Search"
@@ -59,7 +63,6 @@ const CategoryListScreen = () => {
       <Button mode="contained" onPress={() => refetch()} className="mb-4">
         Apply Filters
       </Button>
-
       {isLoading ? (
         <Paragraph>Loading...</Paragraph>
       ) : (

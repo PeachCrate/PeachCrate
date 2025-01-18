@@ -38,16 +38,18 @@ public class PasswordHasher
     }
     public JwtToken GenerateToken(User user, bool isRefreshToken = false)
     {
+        var accessExpirationDate = DateTime.UtcNow.AddMinutes(1);
+        var expDate = isRefreshToken ? DateTime.UtcNow.AddDays(31) : DateTime.UtcNow.AddMinutes(1);
         var jwtToken = new JwtToken
         {
-            Token = CreateToken(user, isRefreshToken),
-            ExpiresAt = DateTime.UtcNow.AddDays(isRefreshToken ? 31 : 7),
+            Token = CreateToken(user, expDate, isRefreshToken),
+            ExpiresAt = expDate,
             IssuedAt = DateTime.UtcNow
         };
 
         return jwtToken;
     }
-    public string CreateToken(User user, bool isRefreshToken = false)
+    public string CreateToken(User user, DateTime expirationDate, bool isRefreshToken = false)
     {
         List<Claim> claims = new List<Claim>
             {
@@ -64,7 +66,7 @@ public class PasswordHasher
         
         var token = new JwtSecurityToken(
             claims: claims,
-            expires: isRefreshToken ? DateTime.UtcNow.AddDays(30) : DateTime.UtcNow.AddDays(1),
+            expires: expirationDate,
             signingCredentials: credentials);
 
         var jwtToken = new JwtSecurityTokenHandler().WriteToken(token);

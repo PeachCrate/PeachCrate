@@ -1,6 +1,5 @@
 import {Alert, ScrollView, View} from "react-native";
 import React, {useState} from "react";
-import CustomButton from "@/components/CustomButton";
 import {useClerk, useUser} from "@clerk/clerk-expo";
 import {router} from "expo-router";
 import PickUserModal from "@/components/auth/PickUserModal";
@@ -39,6 +38,7 @@ const Profile = () => {
     const res = await deleteAccount(null)
       .unwrap()
       .catch(err => toast.show({type: "error", message: err.data}));
+    console.log('delete res', res);
     if (!res)
       return;
     await signOut({sessionId: session?.id});

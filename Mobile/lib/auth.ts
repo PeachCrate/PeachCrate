@@ -4,7 +4,7 @@ import {TokenCache} from "@clerk/clerk-expo/dist/cache";
 import {authApi} from "@/behavior/auth/authApi";
 import {OAuthSignInRequest, RegisterRequest} from "@/behavior/auth/types";
 import store, {AppDispatch} from "@/behavior/store";
-import {setTokens} from "@/behavior/auth/authSlice";
+import {setSessionId, setTokens} from "@/behavior/auth/authSlice";
 import {StartOAuthFlowParams, StartOAuthFlowReturnType} from "@clerk/clerk-expo";
 
 const createTokenCache = (): TokenCache => {
@@ -42,6 +42,7 @@ export const googleOAuth = async (startOAuthFlow: (startOAuthFlowParams?: StartO
     if (createdSessionId && signUp) {
       if (setActive) {
         await setActive({session: createdSessionId});
+        dispatch(setSessionId(createdSessionId));
 
         const request: OAuthSignInRequest = {
           sessionId: createdSessionId

@@ -180,7 +180,6 @@ export default function RootLayout() {
       <ThemeProvider value={navTheme}>
         <PaperProvider theme={configuredTheme}>
           <ToastProvider>
-
             <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
               <ClerkLoaded>
                 <Stack>

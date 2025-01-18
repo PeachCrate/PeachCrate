@@ -93,7 +93,13 @@ public class Program
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8
                         .GetBytes(builder.Configuration.GetSection("JWT:Token").Value)),
                     ValidateIssuer = false,
-                    ValidateAudience = false
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero,
+                    // LifetimeValidator = ((before, expires, token, parameters) =>
+                    // {
+                    //     return DateTime.UtcNow > expires;
+                    // })
                 };
             });
         builder.Services.AddCors(options => options.AddPolicy(name: "NgOrigins",

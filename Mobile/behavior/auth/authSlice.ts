@@ -5,12 +5,14 @@ import * as SecureStore from 'expo-secure-store';
 
 export interface AuthState {
   clientId: string;
+  sessionId: string;
   accessToken: string;
   refreshToken: string;
 }
 
 const initialState: AuthState = {
   clientId: "",
+  sessionId: "",
   accessToken: "",
   refreshToken: "",
 };
@@ -21,6 +23,9 @@ export const authSlice = createSlice({
   reducers: {
     setClientId: (state, action: PayloadAction<string>) => {
       state.clientId = action.payload;
+    },
+    setSessionId: (state, action: PayloadAction<string>) => {
+      state.sessionId = action.payload;
     },
     setAccessToken: (state, action: PayloadAction<string>) => {
       state.accessToken = action.payload;
@@ -44,7 +49,7 @@ export const authSlice = createSlice({
 });
 
 // Action creators are generated for each case reducer function
-export const {setClientId, setAccessToken, setRefreshToken, setTokens, clearTokens} =
+export const {setClientId, setAccessToken, setRefreshToken, setSessionId, setTokens, clearTokens} =
   authSlice.actions;
 
 export default authSlice.reducer;

@@ -1,24 +1,28 @@
-import { Alert, View } from "react-native";
+import {Alert, View} from "react-native";
 import InputField from "@/components/basic/InputField";
-import { Button, Dialog, Portal, Text, useTheme } from "react-native-paper";
-import React, { useState } from "react";
-import { useFormik } from "formik";
-import { initialRegisterForm, registerFormSchema, RegisterFormType } from "./register.types";
-import { useClerk, useSignUp } from "@clerk/clerk-expo";
-import { useAppDispatch } from "@/behavior/hooks";
-import { useRegisterMutation } from "@/behavior/auth/authApi";
-import { RegisterRequest } from "@/behavior/auth/types";
-import { setTokens } from "@/behavior/auth/authSlice";
-import { router } from "expo-router";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
+import {Button, Dialog, Portal, Text, useTheme} from "react-native-paper";
+import React, {useState} from "react";
+import {useFormik} from "formik";
+import {initialRegisterForm, registerFormSchema, RegisterFormType} from "./register.types";
+import {useClerk, useSignUp} from "@clerk/clerk-expo";
+import {useAppDispatch} from "@/behavior/hooks";
+import {useIsCredentialTakenMutation, useRegisterMutation} from "@/behavior/auth/authApi";
+import {IsLoginAndEmailTakenRequest, RegisterRequest} from "@/behavior/auth/types";
+import {setSessionId, setTokens} from "@/behavior/auth/authSlice";
+import {router} from "expo-router";
+import {FontAwesomeIcon} from "@fortawesome/react-native-fontawesome";
+import {faCheckCircle} from "@fortawesome/free-solid-svg-icons";
+import {useToast} from "react-native-paper-toast";
+import {Is} from "@sinclair/typebox/value/is";
 
 const RegisterForm = () => {
   const theme = useTheme();
-  const { isLoaded, signUp, setActive } = useSignUp();
+  const toast = useToast()
+  const {isLoaded, signUp, setActive} = useSignUp();
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const dispatch = useAppDispatch();
   const [register] = useRegisterMutation();
+  const [isCredentialsTaken] = useIsCredentialTakenMutation();
   const [verification, setVerification] = useState({
     state: "default",
     error: "",
@@ -32,13 +36,28 @@ const RegisterForm = () => {
       if (!isLoaded) return;
 
       try {
+        const credsRequest: IsLoginAndEmailTakenRequest = {
+          login: values.name,
+          email: values.email,
+        };
+        let isTaken = false;
+        await isCredentialsTaken(credsRequest)
+          .unwrap()
+          .catch(err => {
+            toast.show({type: 'error', message: err.data});
+            isTaken = true;
+          });
+
+        if (isTaken)
+          return;
+
         await signUp.create({
           emailAddress: values.email,
           password: values.password,
         });
 
-        await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
-        setVerification({ ...verification, state: "pending" });
+        await signUp.prepareEmailAddressVerification({strategy: "email_code"});
+        setVerification({...verification, state: "pending"});
       } catch (err: any) {
         console.error(JSON.stringify(err, null, 2));
         Alert.alert("Error", err.errors[0].longMessage);
@@ -55,8 +74,8 @@ const RegisterForm = () => {
       });
 
       if (signUpAttempt.status === "complete") {
-        await setActive({ session: signUpAttempt.createdSessionId });
-
+        await setActive({session: signUpAttempt.createdSessionId});
+        dispatch(setSessionId(signUpAttempt.createdSessionId!));
         const request: RegisterRequest = {
           login: formik.values.name,
           email: formik.values.email,
@@ -70,7 +89,7 @@ const RegisterForm = () => {
         if (!response)
           return;
         dispatch(setTokens(response));
-        setVerification({ ...verification, state: "success" });
+        setVerification({...verification, state: "success"});
         setShowSuccessModal(true);
       } else {
         setVerification({
@@ -96,7 +115,7 @@ const RegisterForm = () => {
         <Button
           onPress={() => {
             formik.setValues({
-              name: "test1",
+              name: "Slava Varnav",
               email: "chudoha@gmail.com",
               password: "QazWsxEdc2213",
             });
@@ -159,7 +178,7 @@ const RegisterForm = () => {
               iconName="lock"
               keyboardType="numeric"
               value={verification.code}
-              onChangeText={(code) => setVerification({ ...verification, code })}
+              onChangeText={(code) => setVerification({...verification, code})}
               error={verification.error}
             />
             <Button className="mt-5" mode="contained" onPress={onVerifyPress}>
@@ -173,7 +192,7 @@ const RegisterForm = () => {
         <Dialog visible={showSuccessModal}>
           <View className="px-7 py-9 rounded-2xl min-h-[300px]">
             <View className="w-[110px] h-[110px] mx-auto my-5">
-              <FontAwesomeIcon icon={faCheckCircle} size={110} color="green" />
+              <FontAwesomeIcon icon={faCheckCircle} size={110} color="green"/>
             </View>
             <Text className="text-center" variant="headlineMedium">
               Verified

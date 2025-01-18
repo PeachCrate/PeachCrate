@@ -10,10 +10,9 @@ export const baseQuery = fetchBaseQuery({
   baseUrl: BASE_API_URL,
   prepareHeaders: (headers, {getState}) => {
     const accessToken = SecureStore.getItem('accessToken');
-    if (accessToken) {
-      headers.set('authorization', `Bearer ${accessToken}`);
+    if (accessToken && !headers.has('Authorization')) {
+      headers.set('Authorization', `Bearer ${accessToken}`);
     }
-    console.log('headers', headers);
     return headers;
   },
 });
@@ -23,15 +22,19 @@ export const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, Fetch
   api,
   extraOptions
 ) => {
+  const refreshToken = SecureStore.getItem('refreshToken');
+
   let result = await baseQuery(args, api, extraOptions);
 
   if (result.error && result.error.status === 401) {
-    const refreshToken = SecureStore.getItem('refreshToken');
     const {data} = await baseQuery({
-      url: 'auth/refresh/',
+      url: 'auth/refreshToken/',
       method: 'POST',
       body: {
-        refreshToken
+        refreshToken: refreshToken
+      },
+      headers: {
+        'Authorization': "Bearer " + refreshToken
       }
     }, api, extraOptions);
 

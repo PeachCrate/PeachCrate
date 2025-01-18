@@ -5,11 +5,11 @@ import {
   HelloResp,
   IsLoginAndEmailTakenRequest, LoginRequest, OAuthSignInRequest,
 } from "@/behavior/auth/types";
-import {baseQuery} from "@/behavior/baseQuery";
+import {baseQuery, baseQueryWithReauth} from "@/behavior/baseQuery";
 
 export const authApi = createApi({
   reducerPath: "authApi", // Define a reducer path
-  baseQuery,
+  baseQuery: baseQuery,
   tagTypes: ["Auth"], // Add relevant tag types for caching/invalidations
   endpoints: (builder) => ({
     register: builder.mutation<Tokens, RegisterRequest>({
@@ -39,9 +39,10 @@ export const authApi = createApi({
         method: "DELETE",
       }),
     }),
-    isCredentialTaken: builder.query<boolean, IsLoginAndEmailTakenRequest>({
+    isCredentialTaken: builder.mutation<boolean, IsLoginAndEmailTakenRequest>({
       query: (request) => ({
         url: `/auth/IsCredentialTaken?login=${request.login}&email=${request.email}`,
+        method: "POST",
       }),
     }),
     hello: builder.query<HelloResp, null>({
@@ -54,7 +55,7 @@ export const authApi = createApi({
 export const { 
   useRegisterMutation, 
   useHelloQuery, 
-  useIsCredentialTakenQuery, 
+  useIsCredentialTakenMutation, 
   useLoginMutation,
   useDeleteAccountMutation,
   useOAuthSignInMutation,
