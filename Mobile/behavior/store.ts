@@ -1,11 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "@/behavior/auth/authSlice";
+import gameReducer from "@/behavior/game/gameSlice";
 import { authApi } from "@/behavior/auth/authApi";
 import {categoryApi} from "@/behavior/category/categoryApi";
 
 const store = configureStore({
   reducer: {
     auth: authReducer,
+    game: gameReducer,
     [authApi.reducerPath]: authApi.reducer,
     [categoryApi.reducerPath]: categoryApi.reducer,
   },

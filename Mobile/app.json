@@ -52,6 +52,9 @@
       "eas": {
         "projectId": "5a160658-fd78-46f8-aac8-ed776c836ffb"
       }
-    }
+    },
+    "permissions": [
+      "android.permission.HIGH_SAMPLING_RATE_SENSORS"
+    ]
   }
 }

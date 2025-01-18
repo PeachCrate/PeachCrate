@@ -22,7 +22,7 @@ const Home = () => {
   const dispatch = useAppDispatch();
   
   if (!sessionId) {
-    return <Redirect href={"/(auth)/welcome"}/>;
+    return <Redirect href={"/"}/>;
   }
   
   async function test() {

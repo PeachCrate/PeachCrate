@@ -3,11 +3,20 @@ import { useAuth, useClerk } from "@clerk/clerk-expo";
 import React, { useEffect } from "react";
 import { useAppDispatch } from "@/behavior/hooks";
 import {setClientId, setSessionId} from "@/behavior/auth/authSlice";
+import * as ScreenOrientation from "expo-screen-orientation";
 
-const Home = () => {
+
+const Index = () => {
   const dispatch = useAppDispatch();
   const { session } = useClerk();
 
+  useEffect(() => {
+    const lockOrientation = async () => {
+      await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT);
+    };
+    lockOrientation();
+  }, []);
+  
   useEffect(() => {
     if (!session) return;
     dispatch(setClientId(session.user.id!));
@@ -20,4 +29,4 @@ const Home = () => {
   return <Redirect href="/(auth)/welcome" />;
 };
 
-export default Home;
+export default Index;
