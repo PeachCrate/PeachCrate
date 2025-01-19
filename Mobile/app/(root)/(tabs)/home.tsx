@@ -17,55 +17,33 @@ const Home = () => {
   const {user} = useUser();
   const {user: clerkUser, client, session} = useClerk();
   const sessionId = useAppSelector(state => state.auth.sessionId);
-  const [register, {isLoading}] = useRegisterMutation();
-  
-  const dispatch = useAppDispatch();
-  
-  if (!sessionId) {
-    return <Redirect href={"/"}/>;
-  }
-  
-  async function test() {
-    const request: RegisterRequest = {
-      login: "test",
-      email: "test@mail",
-      password: "qwerty13",
-      clerkId: session!.user.id!,
-    };
-    console.log(request);
-    const resp = await register(request)
-      .unwrap()
-      .catch((error) => console.error("DDDDD", error));
-    console.log(resp);
-    //dispatch(setAccessToken(resp.accessToken.token));
-    //dispatch(setAccessToken(resp.refreshToken.token));
-  }
 
-  function foo() {
-    // const {data} = useHelloQuery(null);
-    // console.log("data", data);
-  }
+  // if (!sessionId) {
+  //   return <Redirect href={"/"}/>;
+  // }
 
   return (
     <SafeAreaView>
-      <Text variant='bodyMedium'>Hello {user?.emailAddresses[0].emailAddress}</Text>
-
-      <Text variant='bodyMedium'>Hello {clerkUser?.emailAddresses[0].emailAddress}</Text>
-      <View>
-        {client.sessions.map((s) => (
-          <Text key={s.id} variant='bodyMedium'>
-            {s.status} {s.id} {s.user?.emailAddresses[0].emailAddress}
-          </Text>
-        ))}
-      </View>
-      <Button
-        onPress={() => router.replace("/(auth)/welcome")}
-        mode='contained'
-      >Go to onboarding</Button>
-      <Button mode='contained' onPress={() => foo()}>Test foo</Button>
-      <Button mode='contained' onPress={() => test()}>Test request</Button>
-      <SignedOut><Text>SIGN OUT OUT</Text></SignedOut>
-      <SignedIn><Text>signin</Text></SignedIn>
+      <SignedIn>
+        <Text variant='bodyMedium'>Hello {user?.emailAddresses[0].emailAddress}</Text>
+        <Text variant='bodyMedium'>Hello {clerkUser?.emailAddresses[0].emailAddress}</Text>
+        <View>
+          {client.sessions.map((s) => (
+            <Text key={s.id} variant='bodyMedium'>
+              {s.status} {s.id} {s.user?.emailAddresses[0].emailAddress}
+            </Text>
+          ))}
+        </View>
+      </SignedIn>
+      <SignedOut>
+        <Text>You are not logged in</Text>
+        <Button
+          onPress={() => router.replace("/(auth)/welcome")}
+          mode='contained'
+        >
+          Go to onboarding
+        </Button>
+      </SignedOut>
     </SafeAreaView>
   );
 };

@@ -1,9 +1,11 @@
 import React, {useEffect, useState} from 'react';
 import {FlatList} from 'react-native';
-import {TextInput, Button, Card, Title, Paragraph, useTheme} from 'react-native-paper';
+import {TextInput, Button, Card, Title, Paragraph, useTheme, Text} from 'react-native-paper';
 import {useDeleteCategoryMutation, useGetCategoriesQuery} from "@/behavior/category/categoryApi";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {useNavigation, useRouter} from "expo-router";
+import {SignIn} from "@clerk/clerk-react";
+import {SignedIn, SignedOut} from "@clerk/clerk-expo";
 
 const CategoryListScreen = () => {
   const theme = useTheme();
@@ -46,6 +48,8 @@ const CategoryListScreen = () => {
 
   return (
     <SafeAreaView className="flex-1 p-4 ">
+      <SignedIn>
+        
       <Button onPress={refetch}>Reload</Button>
       <Button mode='contained' onPress={handleCreate}>Create category</Button>
       <TextInput
@@ -83,6 +87,10 @@ const CategoryListScreen = () => {
           )}
         />
       )}
+      </SignedIn>
+      <SignedOut>
+        <Text>You need to be logged in for accessing this page</Text>
+      </SignedOut>
     </SafeAreaView>
   );
 };

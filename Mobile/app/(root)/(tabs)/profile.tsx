@@ -1,6 +1,6 @@
 import {Alert, ScrollView, View} from "react-native";
 import React, {useState} from "react";
-import {useClerk, useUser} from "@clerk/clerk-expo";
+import {SignedIn, SignedOut, useClerk, useUser} from "@clerk/clerk-expo";
 import {router} from "expo-router";
 import PickUserModal from "@/components/auth/PickUserModal";
 import {SafeAreaView} from "react-native-safe-area-context";
@@ -55,20 +55,25 @@ const Profile = () => {
 
   return (
     <SafeAreaView>
-      <ScrollView>
-        <PickUserModal
-          showModal={showProfilesModal}
-          setShowModal={setShowProfilesModal}
-        />
-        <View>
-          <Text variant='bodyMedium'>Current user: {user?.emailAddresses[0].emailAddress}</Text>
-          <Button mode='contained'
-                  onPress={() => toggleShowProfilesModal()}
-          >Change profile</Button>
-          <Button mode='contained' onPress={handleSignOut}>Sign out</Button>
-          <Button mode='contained' onPress={handleAccountDeletion}>Delete my account</Button>
-        </View>
-      </ScrollView>
+      <SignedIn>
+        <ScrollView>
+          <PickUserModal
+            showModal={showProfilesModal}
+            setShowModal={setShowProfilesModal}
+          />
+          <View>
+            <Text variant='bodyMedium'>Current user: {user?.emailAddresses[0].emailAddress}</Text>
+            <Button mode='contained'
+                    onPress={() => toggleShowProfilesModal()}
+            >Change profile</Button>
+            <Button mode='contained' onPress={handleSignOut}>Sign out</Button>
+            <Button mode='contained' onPress={handleAccountDeletion}>Delete my account</Button>
+          </View>
+        </ScrollView>
+      </SignedIn>
+      <SignedOut>
+        <Text>You need to be logged in for accessing this page</Text>
+      </SignedOut>
     </SafeAreaView>
   );
 };

@@ -60,6 +60,7 @@ const PickUserModal = ({showModal, setShowModal, checkSingleUser = true}: PickUs
               mode='contained'
               onPress={() => {
                 router.push("/(auth)/welcome");
+                dispatch(setSessionId(''));
                 hideModal();
               }}
             >Add new account</Button>

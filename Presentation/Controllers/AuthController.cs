@@ -20,13 +20,11 @@ namespace Presentation.Controllers
             _userRepository = userRepository;
         }
 
-        record Resp(string message);
-
-        [HttpGet("hello")]
-        public IActionResult Hello()
+        record PingResponse(string message);
+        [HttpGet("ping")]
+        public IActionResult Ping()
         {
-            var message = "hello world---";
-            return Ok(new Resp(message));
+            return Ok(new PingResponse("pong"));
         }
 
         [HttpPost("register")]

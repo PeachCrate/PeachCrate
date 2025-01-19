@@ -36,6 +36,6 @@ export interface IsLoginAndEmailTakenRequest {
   email: string;
 }
 
-export interface HelloResp {
+export interface PingResponse {
   message: string;
 }
