@@ -8,7 +8,7 @@ const Playground = () => {
   return (
     <SafeAreaView>
       <View>
-        <Text variant='headlineLarge'>Teeter</Text>
+        <Text variant='headlineMedium'>Teeter</Text>
         <TeeterGame/>
       </View>
     </SafeAreaView>

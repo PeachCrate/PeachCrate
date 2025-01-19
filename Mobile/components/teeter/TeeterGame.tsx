@@ -10,7 +10,7 @@ import {Is} from "@sinclair/typebox/value/is";
 
 const {width: dimensionsWidth, height: dimensionsHeight} = Dimensions.get('window');
 const width = dimensionsWidth;
-const height = dimensionsHeight - 220;
+const height = dimensionsHeight - 300;
 const BALL_SIZE = 30;
 const HOLE_SIZE = 50;
 const WALL_THICKNESS = 20;
@@ -41,7 +41,7 @@ const TeeterGame = () => {
     {x: 190, y: 70},
     {x: 260, y: 70},
     {x: 310, y: 70},
-    {x: 300, y: 480}
+    {x: 300, y: 440}
   ];
 
   const walls = [

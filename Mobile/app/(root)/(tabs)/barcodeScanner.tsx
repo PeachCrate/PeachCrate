@@ -9,4 +9,3 @@ const BarcodeScanner = () => {
 };
 
 export default BarcodeScanner;
-

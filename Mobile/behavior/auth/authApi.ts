@@ -2,8 +2,10 @@ import {createApi} from "@reduxjs/toolkit/query/react";
 import {
   RegisterRequest,
   Tokens,
-  HelloResp,
-  IsLoginAndEmailTakenRequest, LoginRequest, OAuthSignInRequest,
+  PingResponse,
+  IsLoginAndEmailTakenRequest,
+  LoginRequest,
+  OAuthSignInRequest,
 } from "@/behavior/auth/types";
 import {baseQuery, baseQueryWithReauth} from "@/behavior/baseQuery";
 
@@ -45,17 +47,17 @@ export const authApi = createApi({
         method: "POST",
       }),
     }),
-    hello: builder.query<HelloResp, null>({
-      query: () => ({ url: "/auth/hello" }),
+    ping: builder.query<PingResponse, null>({
+      query: () => ({url: "/auth/ping"}),
     }),
   }),
 });
 
 // Export hooks for usage in functional components
-export const { 
-  useRegisterMutation, 
-  useHelloQuery, 
-  useIsCredentialTakenMutation, 
+export const {
+  useRegisterMutation,
+  usePingQuery,
+  useIsCredentialTakenMutation,
   useLoginMutation,
   useDeleteAccountMutation,
   useOAuthSignInMutation,
