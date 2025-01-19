@@ -1,14 +1,20 @@
-import { Alert, View } from "react-native";
+import {Alert, View} from "react-native";
 import InputField from "@/components/basic/InputField";
-import { Button } from "react-native-paper";
+import {Button} from "react-native-paper";
 import React from "react";
-import { router } from "expo-router";
-import { useSignIn } from "@clerk/clerk-expo";
-import { useFormik } from "formik";
-import { initialLoginForm, loginFormSchema } from "./login.types";
+import {router} from "expo-router";
+import {useSignIn} from "@clerk/clerk-expo";
+import {useFormik} from "formik";
+import {initialLoginForm, loginFormSchema} from "./login.types";
+import {LoginRequest, OAuthSignInRequest, RegisterRequest} from "@/behavior/auth/types";
+import {authApi, useLoginMutation} from "@/behavior/auth/authApi";
+import {setTokens} from "@/behavior/auth/authSlice";
+import {useAppDispatch} from "@/behavior/hooks";
 
 const LoginForm = () => {
-  const { signIn, setActive, isLoaded } = useSignIn();
+  const {signIn, setActive, isLoaded} = useSignIn();
+  const dispatch = useAppDispatch();
+  const [login] = useLoginMutation();
 
   const formik = useFormik({
     initialValues: initialLoginForm,
@@ -23,7 +29,19 @@ const LoginForm = () => {
         });
 
         if (signInAttempt.status === "complete") {
-          await setActive({ session: signInAttempt.createdSessionId });
+          await setActive({session: signInAttempt.createdSessionId});
+
+          const request: LoginRequest = {
+            email: formik.values.email,
+            password: formik.values.password,
+          };
+
+          const response = await login(request)
+            .unwrap()
+          if (!response)
+            return;
+          dispatch(setTokens(response));
+
           router.replace("/(root)/(tabs)/home");
         } else {
           console.log(JSON.stringify(signInAttempt, null, 2));
