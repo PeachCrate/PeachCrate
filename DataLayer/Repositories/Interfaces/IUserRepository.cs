@@ -17,4 +17,6 @@ public interface IUserRepository
     Task<User?> UpdateUserAsync(int id, User user);
     Task<IEnumerable<User>> GetUsersAsync();
     Task<IEnumerable<User>> GetUserByGroupId(int groupId);
+    Task<bool> IsLoginTakenAsync(string login);
+    Task<bool> IsEmailUsedAsync(string email);
 }

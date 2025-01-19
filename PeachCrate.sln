@@ -12,6 +12,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceLayer", "ServiceLayer\ServiceLayer.csproj", "{3C8A326D-F5F6-4BB3-832D-FA86E6A12E8A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{CC9162D2-CD88-4EBE-8DAF-A5B9CE655CC6}"
+	ProjectSection(SolutionItems) = preProject
+		Dockerfile = Dockerfile
+		docker-compose.yml = docker-compose.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
