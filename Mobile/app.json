@@ -40,6 +40,13 @@
         {
           "configureAndroidBackup": true
         }
+      ],
+      [
+        "react-native-vision-camera",
+        {
+          "cameraPermissionText": "PeachCrate needs access to your Camera.",
+          "enableCodeScanner": true
+        }
       ]
     ],
     "experiments": {
