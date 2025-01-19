@@ -20,7 +20,7 @@ export default function TabsLayout() {
           borderTopWidth: 0,
         },
         tabBarActiveTintColor: theme.colors.primary, // Tailwind blue-500
-        tabBarInactiveTintColor: theme.colors.backdrop, // Tailwind gray-400
+        tabBarInactiveTintColor: "#aaaaaa", // Tailwind gray-400
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: "600",
