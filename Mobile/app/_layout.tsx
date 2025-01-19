@@ -15,6 +15,7 @@ import configureFonts from "react-native-paper/src/styles/fonts";
 import {DefaultTheme, NavigationContainer, ThemeProvider} from "@react-navigation/native";
 import {StatusBar} from "expo-status-bar";
 import {ToastProvider} from "react-native-paper-toast";
+import {SafeAreaProvider} from "react-native-safe-area-context";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -176,24 +177,26 @@ export default function RootLayout() {
     );
   }
   return (
-    <Provider store={store}>
-      <ThemeProvider value={navTheme}>
-        <PaperProvider theme={configuredTheme}>
-          <ToastProvider>
-            <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
-              <ClerkLoaded>
-                <Stack>
-                  <Stack.Screen name="index" options={{headerShown: false}}/>
-                  <Stack.Screen name="(auth)" options={{headerShown: false}}/>
-                  <Stack.Screen name="(root)" options={{headerShown: false}}/>
-                  <Stack.Screen name="+not-found"/>
-                </Stack>
-                <StatusBar style='auto'/>
-              </ClerkLoaded>
-            </ClerkProvider>
-          </ToastProvider>
-        </PaperProvider>
-      </ThemeProvider>
-    </Provider>
+    <SafeAreaProvider>
+      <Provider store={store}>
+        <ThemeProvider value={navTheme}>
+          <PaperProvider theme={configuredTheme}>
+            <ToastProvider>
+              <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
+                <ClerkLoaded>
+                  <Stack>
+                    <Stack.Screen name="index" options={{headerShown: false}}/>
+                    <Stack.Screen name="(auth)" options={{headerShown: false}}/>
+                    <Stack.Screen name="(root)" options={{headerShown: false}}/>
+                    <Stack.Screen name="+not-found"/>
+                  </Stack>
+                  <StatusBar style='auto'/>
+                </ClerkLoaded>
+              </ClerkProvider>
+            </ToastProvider>
+          </PaperProvider>
+        </ThemeProvider>
+      </Provider>
+    </SafeAreaProvider>
   );
 }

@@ -78,6 +78,16 @@ export default function TabsLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="barcodeScanner"
+        options={{
+          title: "Barcode",
+          headerShown: false,
+          tabBarIcon: (focused) => (
+            <TabIcon source={'barcode'} focused={focused.focused} focusedSource={'barcode-scan'}/>
+          ),
+        }}
+      />
     </Tabs>
     </>
   );

@@ -7,13 +7,22 @@ import {Icon, useTheme} from "react-native-paper";
 type TabIconProps = {
   source: string;
   focused: boolean;
+  focusedSource?: string;
 }
 
-const TabIcon = ({source, focused}: TabIconProps) => {
+const TabIcon = ({source, focused, focusedSource}: TabIconProps) => {
   const theme = useTheme();
+  const getSource = () => {
+    if (!focused){
+      return source;
+    }
+    if (focusedSource)
+      return focusedSource;
+    return `${source}-outline`
+  }
   return (<>
     <View>
-      <Icon source={`${source}${focused ? '-outline': ''}`} size={30} color={theme.colors.primary} />
+      <Icon source={getSource()} size={30} color={theme.colors.primary} />
     </View>
   </>);
 }

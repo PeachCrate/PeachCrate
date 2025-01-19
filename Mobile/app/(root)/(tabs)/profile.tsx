@@ -4,7 +4,7 @@ import {useClerk, useUser} from "@clerk/clerk-expo";
 import {router} from "expo-router";
 import PickUserModal from "@/components/auth/PickUserModal";
 import {SafeAreaView} from "react-native-safe-area-context";
-import {Button, Text} from "react-native-paper";
+import {Button, Surface, Text} from "react-native-paper";
 import {useDeleteAccountMutation} from "@/behavior/auth/authApi";
 import {useToast} from "react-native-paper-toast";
 import {useAppDispatch} from "@/behavior/hooks";
