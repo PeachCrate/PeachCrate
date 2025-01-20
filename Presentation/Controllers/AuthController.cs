@@ -71,6 +71,20 @@ namespace Presentation.Controllers
                 return BadRequest(exception.Message);
             }
         }
+        
+        [HttpPost("switchAccount")]
+        public async Task<ActionResult<JwtTokensResponse>> SwitchAccount(SwitchAccountProp prop)
+        {
+            try
+            {
+                var (accessJwtToken, refreshJwtToken) = await _authRepository.SwitchAccountAsync(prop.clientId);
+                return Ok(new JwtTokensResponse(accessJwtToken, refreshJwtToken));
+            }
+            catch (AuthException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+        }
 
         public record RefreshTokenProp(string refreshToken);
         // POST api/<AuthContoller>
@@ -106,12 +120,13 @@ namespace Presentation.Controllers
             }
         }
 
+        public record DeleteUserProp(string clientId);
         [HttpDelete()]
-        public async Task<ActionResult<bool>> DeleteUser()
+        public async Task<ActionResult<bool>> DeleteUser(DeleteUserProp prop)
         {
             try
             {
-                return await _authRepository.DeleteUser();
+                return await _authRepository.DeleteUser(prop.clientId);
             }
             catch (Exception e)
             {

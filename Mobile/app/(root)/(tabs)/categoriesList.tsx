@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {FlatList} from 'react-native';
-import {TextInput, Button, Card, Title, Paragraph, useTheme, Text} from 'react-native-paper';
+import {TextInput, Button, Card, Title, Paragraph, useTheme, Text, Switch} from 'react-native-paper';
 import {useDeleteCategoryMutation, useGetCategoriesQuery} from "@/behavior/category/categoryApi";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {useNavigation, useRouter} from "expo-router";
@@ -10,14 +10,15 @@ import {SignedIn, SignedOut} from "@clerk/clerk-expo";
 const CategoryListScreen = () => {
   const theme = useTheme();
   const [search, setSearch] = useState('');
-  const [orderBy, setOrderBy] = useState('');
+  const [asc, setAsc] = useState(true);
   const [pageNum, setPageNum] = useState(10);
   const [pageStart, setPageStart] = useState(0);
   const router = useRouter();
 
   const {data, isLoading, refetch, error} = useGetCategoriesQuery({
     filterValue: search,
-    orderBy,
+    filterBy: "ByTitle",
+    orderBy: asc ? "ByTitleASC" : "ByTitleDESC",
     pageNum,
     pageStart,
   }, {refetchOnMountOrArgChange: true});
@@ -58,12 +59,8 @@ const CategoryListScreen = () => {
         onChangeText={setSearch}
         className="mb-4"
       />
-      <TextInput
-        label="Order By"
-        value={orderBy}
-        onChangeText={setOrderBy}
-        className="mb-4"
-      />
+        <Text>Sort by title in ascending order</Text>
+      <Switch value={asc} onChange={() => setAsc(!asc)}/>
       <Button mode="contained" onPress={() => refetch()} className="mb-4">
         Apply Filters
       </Button>
@@ -72,7 +69,7 @@ const CategoryListScreen = () => {
       ) : (
         <FlatList
           data={data!}
-          keyExtractor={(item) => item.categoryId.toString()}
+          keyExtractor={(item) => item.categoryId!.toString()}
           renderItem={({item}) => (
             <Card className="mb-4">
               <Card.Content>
@@ -80,8 +77,8 @@ const CategoryListScreen = () => {
                 <Paragraph>{item.description}</Paragraph>
               </Card.Content>
               <Card.Actions>
-                <Button onPress={() => handleEdit(item.categoryId)}>Edit</Button>
-                <Button onPress={() => handleDelete(item.categoryId)}>Delete</Button>
+                <Button onPress={() => handleEdit(item.categoryId!)}>Edit</Button>
+                <Button onPress={() => handleDelete(item.categoryId!)}>Delete</Button>
               </Card.Actions>
             </Card>
           )}

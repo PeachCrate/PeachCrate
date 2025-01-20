@@ -6,8 +6,9 @@ import {
   IsLoginAndEmailTakenRequest,
   LoginRequest,
   OAuthSignInRequest,
+  SwitchAccountRequest, DeleteAccountRequest,
 } from "@/behavior/auth/types";
-import {baseQuery, baseQueryWithReauth} from "@/behavior/baseQuery";
+import {baseQuery} from "@/behavior/baseQuery";
 
 export const authApi = createApi({
   reducerPath: "authApi", // Define a reducer path
@@ -35,10 +36,18 @@ export const authApi = createApi({
         body: request
       })
     }),
-    deleteAccount: builder.mutation<string, null>({
+    switchAccount: builder.mutation<Tokens, SwitchAccountRequest>({
+      query: (request) => ({
+        url: '/Auth/switchAccount',
+        method: "POST",
+        body: request
+      })
+    }),
+    deleteAccount: builder.mutation<string, DeleteAccountRequest>({
       query: (request) => ({
         url: '/auth/',
         method: "DELETE",
+        body: request,
       }),
     }),
     isCredentialTaken: builder.mutation<boolean, IsLoginAndEmailTakenRequest>({
@@ -61,4 +70,5 @@ export const {
   useLoginMutation,
   useDeleteAccountMutation,
   useOAuthSignInMutation,
+  useSwitchAccountMutation,
 } = authApi;

@@ -1,7 +1,6 @@
 import {baseQuery, baseQueryWithReauth} from "@/behavior/baseQuery";
 import { createApi } from "@reduxjs/toolkit/query/react";
 import {Category, CategoryQueryParams} from "@/behavior/category/types";
-import {PingResp} from "@/behavior/auth/types";
 
 export const categoryApi = createApi({
   reducerPath: 'categoryApi',

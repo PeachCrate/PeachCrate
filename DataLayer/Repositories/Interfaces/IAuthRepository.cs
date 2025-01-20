@@ -13,5 +13,6 @@ public interface IAuthRepository
     Task<JwtTokensResponse> RefreshToken(string refreshToken);
     Task<bool> IsCredentialTaken(string login, string email);
 
-    Task<bool> DeleteUser();
+    Task<bool> DeleteUser(string clientId);
+    Task<JwtTokensResponse> SwitchAccountAsync(string clientId);
 }

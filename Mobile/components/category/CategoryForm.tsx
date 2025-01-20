@@ -6,31 +6,35 @@ import React from "react";
 import {useFormik} from "formik";
 import {categoryFormSchema, initialCategoryForm} from "@/components/category/form.types";
 import InputField from "@/components/basic/InputField";
+import {Category} from "@/behavior/category/types";
+import {useRouter} from "expo-router";
 
 type CategoryFormProps = {
   isEdit: boolean,
-  categoryId: number | null,
+  categoryId?: number,
 }
 
 const CategoryForm = ({isEdit, categoryId}: CategoryFormProps) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const router = useRouter();
 
   const [addCategory] = useAddCategoryMutation();
   const [updateCategory] = useUpdateCategoryMutation();
-  const { data } = useGetCategoryQuery(categoryId!, { skip: !isEdit });
+  const {data} = useGetCategoryQuery(categoryId!, {skip: !isEdit});
 
   const handleSubmit = async () => {
-    const category = { title, description };
+    const category: Category = {title: formik.values.title!, description: formik.values.description!, categoryId: categoryId};
     if (isEdit) {
-      await updateCategory({ categoryId: categoryId!, ...category });
+      await updateCategory({categoryId: categoryId!, ...category});
     } else {
       await addCategory(category);
     }
+    router.back();
   };
-  
+
   const formik = useFormik({
-    initialValues: initialCategoryForm,
+    initialValues: {title: data?.title, description: data?.description},
     validationSchema: categoryFormSchema,
     onSubmit: handleSubmit,
   })
@@ -45,9 +49,9 @@ const CategoryForm = ({isEdit, categoryId}: CategoryFormProps) => {
   return (
     <>
       <Text variant='headlineSmall'>{isEdit ? 'Update category' : 'Create category'}</Text>
-      <InputField 
-        label='Title' 
-        placeholder="Enter title" 
+      <InputField
+        label='Title'
+        placeholder="Enter title"
         iconName='format-title'
         value={formik.values.title}
         onChangeText={formik.handleChange("title")}
