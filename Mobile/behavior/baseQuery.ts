@@ -13,6 +13,7 @@ export const baseQuery = fetchBaseQuery({
     if (accessToken && !headers.has('Authorization')) {
       headers.set('Authorization', `Bearer ${accessToken}`);
     }
+    console.log("headers", headers);
     return headers;
   },
 });
@@ -23,7 +24,8 @@ export const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, Fetch
   extraOptions
 ) => {
   const refreshToken = SecureStore.getItem('refreshToken');
-
+  if (!refreshToken)
+    return {data: null};
   let result = await baseQuery(args, api, extraOptions);
 
   if (result.error && result.error.status === 401) {

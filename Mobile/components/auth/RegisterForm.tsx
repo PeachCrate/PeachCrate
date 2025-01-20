@@ -97,7 +97,7 @@ const RegisterForm = () => {
           error: "Verification failed",
           state: "failed",
         });
-        console.error(JSON.stringify(signUpAttempt, null, 2));
+        toast.show({type:'error', message:"Verification failed" })
       }
     } catch (err: any) {
       setVerification({
@@ -105,7 +105,7 @@ const RegisterForm = () => {
         error: err.errors[0].longMessage,
         state: "failed",
       });
-      console.error(JSON.stringify(err, null, 2));
+      toast.show({type:'error', message:err.errors[0].longMessage })
     }
   };
 

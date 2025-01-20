@@ -25,6 +25,7 @@ public class AuthException : Exception
             AuthErrorType.BadCredentials => "Bad credentials.",
             AuthErrorType.LoginTaken => "This login is taken.",
             AuthErrorType.EmailIsUsed => "This email is in use.",
+            AuthErrorType.InfoCorrupted => "User info is corrupted.",
             _ => ""
         };
     }
@@ -39,4 +40,5 @@ public enum AuthErrorType
     BadCredentials,
     LoginTaken,
     EmailIsUsed,
+    InfoCorrupted
 }

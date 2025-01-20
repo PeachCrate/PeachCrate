@@ -14,6 +14,14 @@ export interface OAuthSignInRequest {
   sessionId: string;
 }
 
+export interface SwitchAccountRequest {
+  clientId: string;
+}
+
+export interface DeleteAccountRequest {
+  clientId: string;
+}
+
 export interface Tokens {
   accessToken: AccessToken;
   refreshToken: RefreshToken;

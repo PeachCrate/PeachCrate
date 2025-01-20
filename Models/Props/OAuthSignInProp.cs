@@ -1,2 +1,1 @@
-public record struct OAuthSignInProp(
-    string SessionId);
+public record struct OAuthSignInProp(string SessionId);
