@@ -120,6 +120,8 @@ public class UserRepository : IUserRepository
     public async Task DeleteUserAsync(User user)
     {
         _dataContext.Users.Remove(user);
+        var group = await _dataContext.Groups.Where(g => g.Users.Contains(user)).FirstOrDefaultAsync();
+        _dataContext.Groups.Remove(group);
         await _dataContext.SaveChangesAsync();
     }
 

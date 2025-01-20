@@ -5,7 +5,9 @@ import {useClerk, useUser} from "@clerk/clerk-expo";
 import {useToast} from "react-native-paper-toast";
 import {Button, Dialog, Portal, RadioButton, Text} from "react-native-paper";
 import {useAppDispatch} from "@/behavior/hooks";
-import {setSessionId} from "@/behavior/auth/authSlice";
+import {setSessionId, setTokens} from "@/behavior/auth/authSlice";
+import {useSwitchAccountMutation} from "@/behavior/auth/authApi";
+import {SwitchAccountRequest} from "@/behavior/auth/types";
 
 type PickUserModalProps = {
   showModal: boolean;
@@ -17,16 +19,26 @@ const PickUserModal = ({showModal, setShowModal, checkSingleUser = true}: PickUs
   const {client, setActive} = useClerk();
   const {user} = useUser();
   const dispatch = useAppDispatch();
+  const [switchAccount] = useSwitchAccountMutation();
 
   const hideModal = () => {
     setShowModal(false);
   }
 
-  function handleProfileSwitch(userId: string) {
+  async function handleProfileSwitch(userId: string) {
     if (userId === user?.id && client.activeSessions.length > 2) return;
+    
+    const switchAccountReq: SwitchAccountRequest = {
+      clientId: userId,
+    }
+    const res = await switchAccount(switchAccountReq).unwrap();
+    if (!res)
+      return;
+    
     const session = client.sessions.find((s) => s?.user?.id === userId);
     setActive({session: session?.id}).catch((err: any) => console.error(err));
     dispatch(setSessionId(session?.id!));
+    dispatch(setTokens(res));
     hideModal();
     router.replace("/(root)/(tabs)/home");
   }

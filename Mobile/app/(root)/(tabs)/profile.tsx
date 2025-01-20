@@ -9,6 +9,7 @@ import {useDeleteAccountMutation} from "@/behavior/auth/authApi";
 import {useToast} from "react-native-paper-toast";
 import {useAppDispatch} from "@/behavior/hooks";
 import {clearTokens, setSessionId} from "@/behavior/auth/authSlice";
+import {DeleteAccountRequest} from "@/behavior/auth/types";
 
 const Profile = () => {
   const toast = useToast();
@@ -35,8 +36,11 @@ const Profile = () => {
   }
 
   async function handleAccountDeletion() {
-
-    const res = await deleteAccount(null)
+    const req: DeleteAccountRequest = {
+      clientId: session?.user.id!
+    }
+    console.log('req', req);
+    const res = await deleteAccount(req)
       .unwrap()
       .catch(err => toast.show({type: "error", message: err.data}));
     console.log('delete res', res);
